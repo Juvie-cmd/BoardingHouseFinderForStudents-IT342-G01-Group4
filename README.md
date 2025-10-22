@@ -7,6 +7,7 @@ Powered by **Supabase** as the backend service, the system provides **real-time 
 - 🔍 **Search** for boarding houses by price, distance, room type, and amenities.
 - 🏘️ **View listings** with Google Maps integration for precise location visibility.
 - 🧑‍💼 **Landlords:** Post, edit, and manage their property listings.
+- 🧑‍💼 **Administrator:** System management, user oversight, and content moderation.
 - 🧑‍🎓 **Students:** Save, bookmark, and contact landlords directly through the app.
 
 With its Supabase backend, React web frontend, and mobile app, the **Boarding House Finder for Students** delivers an **efficient, secure, and user-friendly** solution for the student housing community.
