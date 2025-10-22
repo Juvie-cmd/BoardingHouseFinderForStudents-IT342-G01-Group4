@@ -98,7 +98,7 @@ Run the mobile app:
 npm install
 npm start
 
-##                                👥 Team Members
+##👥 Team Members
 
 - **Justin Andry Diva** — Developer — justinandry.diva@cit.edu — [@avid0101](https://github.com/avid0101)  
 - **Juvie Coca** — Developer — juvie.coca@cit.edu — [@Juvie-cmd](https://github.com/Juvie-cmd)  
