@@ -1,0 +1,47 @@
+.profile-header-bar {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-hover) 100%);
+  color: white;
+  padding: 3rem 0;
+  margin-bottom: 2rem;
+}
+
+
+.profile-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-header-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-header-bar h1 {
+  color: white;
+  margin: 0;
+  font-size: 2rem;
+}
+
+.profile-header-bar .text-muted {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0.25rem 0 0 0;
+}
+
+.profile-main-content {
+  margin-top: -2rem;
+  padding-bottom: 3rem;
+}
+
+.profile-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .profile-grid {
+    grid-template-columns: 350px 1fr;
+  }
+}

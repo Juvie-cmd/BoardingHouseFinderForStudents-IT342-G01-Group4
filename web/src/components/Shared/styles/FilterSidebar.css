@@ -1,0 +1,57 @@
+/* src/components/Shared/styles/FilterSidebar.css */
+
+.filter-sidebar {
+  padding: 1.5rem; /* Increased padding */
+  position: sticky;
+  top: 6rem; /* Header height + gap */
+  border: 1px solid var(--border-color); /* Added border for card effect */
+  border-radius: var(--border-radius);
+  background-color: var(--bg-white);
+}
+.filter-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem; /* Increased margin */
+  padding-bottom: 1rem; /* Added padding */
+  border-bottom: 1px solid var(--border-color); /* Added separator */
+}
+.filter-sidebar-header h2 { font-size: 1.25rem; margin: 0; color: var(--dark-text); }
+.filter-section { margin-bottom: 1.5rem; } /* Increased margin */
+.filter-section h3 { 
+  font-size: 1rem; 
+  font-weight: 600; /* Made bolder */
+  color: var(--dark-text);
+  margin-bottom: 1rem; /* Increased margin */
+}
+.filter-section hr { margin-top: 1.5rem; display: none; /* Hide internal separators */}
+.price-range-inputs { display: flex; gap: 1rem; } /* Increased gap */
+.filter-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Increased gap */
+  margin-bottom: 0.75rem; /* Increased margin */
+}
+.filter-checkbox-item label { 
+  font-weight: 400; 
+  cursor: pointer; 
+  color: var(--medium-text);
+  font-size: 0.875rem;
+}
+.filter-checkbox-item input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--primary-color);
+}
+.price-range-display {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: var(--medium-text);
+  margin-bottom: 0.5rem;
+}
+/* Basic slider styling (replace with actual slider component if needed) */
+input[type="range"] { 
+  width: 100%; 
+  accent-color: var(--primary-color);
+}
