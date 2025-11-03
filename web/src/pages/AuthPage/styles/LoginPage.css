@@ -1,0 +1,65 @@
+/* src/pages/AuthPage/styles/LoginPage.css */
+
+.login-page-container {
+  min-height: 100vh;
+  width: 100vw;
+  background-image: linear-gradient(to bottom right, var(--primary-light-bg), #e0e7ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+.login-wrapper {
+  width: 100%;
+  max-width: 28rem; /* 448px - perfect width for login forms */
+  margin-left: auto;
+  margin-right: auto;
+} 
+.login-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.login-logo {
+  width: 3rem;
+  height: 3rem;
+  background-color: var(--primary-color);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  color: white;
+}
+.login-title { font-size: 1.5rem; font-weight: 600; color: var(--dark-text); }
+.login-subtitle { text-align: center; color: var(--medium-text); margin-bottom: 2rem; }
+.card.login-card-tabs { overflow: hidden; }
+.login-tabs-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background-color: var(--bg-light-gray);
+}
+.login-tab-trigger {
+  background: none;
+  border: none;
+  padding: 1rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--medium-text);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+.login-tab-trigger.active {
+  background-color: var(--bg-white);
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+.login-tab-content { padding: 1.5rem; }
+.login-tab-header { margin-bottom: 1.5rem; }
+.login-tab-header h3 { font-size: 1.25rem; }
+.login-tab-header p { color: var(--medium-text); font-size: 0.875rem; margin: 0; }
+
+/* Alert styles are defined globally in App.css */

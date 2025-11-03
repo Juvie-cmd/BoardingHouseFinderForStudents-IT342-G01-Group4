@@ -1,0 +1,274 @@
+/* src/pages/StudentPage/styles/SearchMap.css */
+
+/* --- Hero Section --- */
+.hero-section {
+  background-color: var(--primary-color);
+  padding: 6rem 1rem 5rem 1rem; /* Added horizontal padding */
+}
+.hero-content { text-align: center; margin-bottom: 2.5rem; max-width: 80rem; margin: 0 auto 2.5rem auto; } /* Centered content */
+.hero-content h1 { color: var(--bg-white); margin-bottom: 1rem; }
+.hero-content p { color: var(--primary-text-light); font-size: 1.125rem; max-width: 48rem; margin: 0 auto; }
+.search-card { max-width: 56rem; margin: 0 auto; box-shadow: var(--shadow-lg); background-color: var(--bg-white); } /* Ensure background */
+.search-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.search-grid-item { flex: 1; min-width: 12rem; }
+.search-grid-item label {
+  font-size: 0.875rem;
+  color: var(--medium-text);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+.search-grid-item-icon-wrapper { position: relative; }
+.search-grid-item-icon-wrapper .icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--light-text);
+  pointer-events: none; /* Make icon unclickable */
+  font-size: 1rem;
+}
+.search-grid-item-button { align-self: flex-end; }
+
+---
+
+/* --- Why Choose Section --- */
+.why-choose-section {
+  padding: 5rem 1rem; /* Added horizontal padding */
+  background-color: var(--bg-light-gray);
+}
+.why-choose-section .grid-3-col { /* Target grid specifically */
+  max-width: 80rem; /* Use container width */
+  margin: 2rem auto 0 auto; /* Added top margin */
+}
+/* section-header is global */
+.feature-item {
+  text-align: center;
+  background-color: var(--bg-white);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease; /* Added transition */
+}
+.feature-item:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+.feature-icon-wrapper {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem auto;
+  font-size: 1.75rem;
+}
+.feature-icon-wrapper.blue { background-color: var(--primary-light-bg); color: var(--primary-color); }
+.feature-icon-wrapper.green { background-color: var(--green-light-bg); color: var(--green-color); }
+.feature-icon-wrapper.purple { background-color: var(--purple-light-bg); color: var(--purple-color); }
+.feature-item h3 { margin-bottom: 0.5rem; }
+.feature-item p { font-size: 0.875rem; color: var(--medium-text); margin-bottom: 0; }
+
+---
+
+/* --- Featured Listings Section --- */
+.featured-listings-section {
+  padding: 5rem 1rem; /* Added horizontal padding */
+  background-color: var(--bg-white);
+}
+.featured-listings-section .section-header { /* Style section header if needed */
+  margin-bottom: 2rem; /* Adjust spacing */
+}
+.featured-listings-section .grid-3-col { /* Ensure grid layout */
+  max-width: 80rem; /* Use container width */
+  margin: 0 auto; /* Center the grid */
+}
+
+/* --- Listing Card Styles (Copied & Adjusted from previous response) --- */
+.listing-card {
+  overflow: hidden;
+  display: flex; /* Use flexbox for vertical layout */
+  flex-direction: column; /* Stack image and content vertically */
+  height: 100%; /* Make cards in a row equal height potentially */
+  border: 1px solid var(--border-color); /* Ensure border is visible */
+  border-radius: var(--border-radius);
+  background-color: var(--bg-white); /* Ensure background */
+  box-shadow: var(--shadow-sm);
+}
+.listing-card.card-hover:hover { /* Ensure hover effect applies */
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-5px);
+  cursor: pointer;
+}
+.listing-image-wrapper {
+  position: relative;
+  height: 14rem; /* Fixed height for image */
+  overflow: hidden;
+  background-color: var(--bg-dark-gray);
+  flex-shrink: 0; /* Prevent image from shrinking */
+}
+.listing-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.listing-image-wrapper .badge { /* Style for the "Featured" badge */
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background-color: var(--green-color);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.favorite-button {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  font-size: 1.1rem;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+.favorite-button:hover { opacity: 1; transform: scale(1.1); box-shadow: var(--shadow-sm); }
+.favorite-button.active { opacity: 1; color: #ef4444; }
+
+.listing-card-content {
+  padding: 1.25rem;
+  flex-grow: 1; /* Allow content to fill remaining space */
+  display: flex; /* Use flexbox for content layout */
+  flex-direction: column; /* Stack content vertically */
+}
+.listing-info-header {
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+}
+.listing-card-content h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+.listing-info {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--medium-text);
+  margin-bottom: 0.35rem;
+}
+.listing-info .icon {
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.listing-amenities {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--bg-light-gray);
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+.listing-amenity-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.listing-amenity-item .icon { font-size: 0.9rem; flex-shrink: 0; }
+.listing-rating .icon { color: var(--yellow-color); }
+.listing-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto; /* Push footer to the bottom */
+  padding-top: 1rem; /* Add space above footer */
+  flex-shrink: 0;
+}
+.listing-price .price {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+.listing-price .period {
+  color: var(--medium-text);
+  font-size: 0.875rem;
+  margin-left: 0.25rem;
+}
+.listing-card-footer .button {
+  padding: 0.5rem 1rem;
+}
+
+---
+
+/* --- How It Works Section --- */
+.how-it-works-section {
+  padding: 5rem 1rem; /* Added horizontal padding */
+  background-color: var(--bg-light-gray); /* Match Why Choose section */
+}
+.how-it-works-section .grid-3-col { /* Target grid specifically */
+  max-width: 80rem; /* Use container width */
+  margin: 2rem auto 0 auto; /* Added top margin */
+}
+.step-item { text-align: center; }
+.step-number {
+  width: 4rem;
+  height: 4rem;
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem auto;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+.step-item h3 { margin-bottom: 0.5rem; }
+.step-item p { font-size: 0.875rem; color: var(--medium-text); margin-bottom: 0; }
+
+---
+
+/* --- Footer --- */
+.footer {
+  padding: 4rem 1rem; /* Added horizontal padding */
+  background-color: var(--dark-text);
+  color: white;
+}
+.footer .container { /* Ensure footer content is centered */
+  max-width: 80rem;
+  margin: 0 auto;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+@media (min-width: 768px) {
+  .footer-grid { grid-template-columns: repeat(4, 1fr); }
+}
+.footer-col h4 { color: white; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;}
+.footer-col p, .footer-col li a {
+  font-size: 0.875rem;
+  color: var(--light-text);
+  text-decoration: none;
+}
+.footer-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+.footer-col li a:hover { color: white; }
+.footer-bottom { border-top: 1px solid #334155; padding-top: 2rem; text-align: center; font-size: 0.875rem; color: var(--light-text); } /* slate-800 */

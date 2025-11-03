@@ -1,0 +1,85 @@
+/* src/components/Shared/styles/ErrorBoundary.css */
+
+.error-boundary-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-light-gray);
+  padding: 1rem;
+}
+
+.error-boundary-card {
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  padding: 2rem;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.error-boundary-card h1 {
+  color: var(--dark-text);
+  font-size: 1.875rem;
+  margin-bottom: 1rem;
+}
+
+.error-message {
+  color: var(--medium-text);
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.error-details {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  font-size: 0.875rem;
+  word-break: break-word;
+}
+
+.error-details strong {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.error-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.error-stack {
+  margin-top: 1.5rem;
+  text-align: left;
+  background-color: var(--bg-light-gray);
+  padding: 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.error-stack summary {
+  font-weight: 500;
+  color: var(--dark-text);
+  margin-bottom: 0.5rem;
+  user-select: none;
+}
+
+.error-stack pre {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--medium-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
