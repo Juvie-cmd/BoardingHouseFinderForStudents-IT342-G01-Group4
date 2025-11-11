@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const isAuthenticated = !!token;
 
   // ===== REGISTER =====
@@ -55,8 +56,11 @@ export function AuthProvider({ children }) {
 
       const data = await res.json();
       
+      // Store token
       setToken(data.token);
       localStorage.setItem("token", data.token);
+
+      // Set user from response
       setUser({ 
         email: data.email, 
         role: data.role, 
@@ -87,15 +91,16 @@ export function AuthProvider({ children }) {
 
       if (!res.ok) {
         if (res.status === 401) {
-          logout();
+          logout(); // Token expired
           return null;
         }
         throw new Error("Failed to fetch profile");
       }
 
       const data = await res.json();
-      setUser(data); // ✅ FIXED: Use data directly, not data.data
-      return data;
+      const profileData = data.data || data;
+      setUser(profileData);
+      return profileData;
     } catch (error) {
       console.error("Fetch profile error:", error);
       throw error;
@@ -106,6 +111,7 @@ export function AuthProvider({ children }) {
   const updateProfile = async (updates) => {
     if (!token) throw new Error("Not authenticated");
 
+    setIsLoading(true);
     try {
       const res = await fetch(`${API_BASE}/profile`, {
         method: "PUT",
@@ -122,11 +128,14 @@ export function AuthProvider({ children }) {
       }
 
       const data = await res.json();
-      setUser(data); // ✅ FIXED: Use data directly
-      return data;
+      const profileData = data.data || data;
+      setUser(profileData);
+      return profileData;
     } catch (error) {
       console.error("Update profile error:", error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -137,16 +146,28 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("token");
   };
 
-  // ===== AUTO-FETCH PROFILE ON PAGE LOAD =====
-  // ✅ FIXED: Only run ONCE when token exists and user is null
+  // ===== AUTO-FETCH PROFILE ON PAGE LOAD (ONLY ONCE) =====
   useEffect(() => {
-    if (token && !user) {
-      fetchProfile().catch(err => {
-        console.warn("Failed to fetch profile on load:", err);
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]); // ✅ FIXED: Only depend on token, not user
+    const initializeAuth = async () => {
+      if (token && !user && !isInitialized) {
+        setIsLoading(true);
+        try {
+          await fetchProfile();
+        } catch (err) {
+          console.warn("Failed to fetch profile on load:", err);
+          // If profile fetch fails, clear invalid token
+          logout();
+        } finally {
+          setIsLoading(false);
+          setIsInitialized(true);
+        }
+      } else if (!token) {
+        setIsInitialized(true);
+      }
+    };
+
+    initializeAuth();
+  }, [token, isInitialized]); // Remove 'user' from dependencies
 
   return (
     <AuthContext.Provider
@@ -154,6 +175,7 @@ export function AuthProvider({ children }) {
         user, 
         isAuthenticated, 
         isLoading,
+        isInitialized,
         login, 
         register, 
         logout, 
