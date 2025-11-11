@@ -32,16 +32,18 @@ export function Profile({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fetch user profile on mount
+  // ✅ Fetch profile ONLY once on mount (prevents flickering)
   useEffect(() => {
     const loadProfile = async () => {
       try {
         setLoading(true);
-        await fetchProfile(); // updates context user
-        setFormData({
-          name: user?.name || '',
-          email: user?.email || ''
-        });
+        const profileData = await fetchProfile();
+        if (profileData) {
+          setFormData({
+            name: profileData.name || '',
+            email: profileData.email || ''
+          });
+        }
       } catch (err) {
         console.error('Failed to fetch profile:', err);
         setError('Failed to load profile. Please refresh.');
@@ -49,8 +51,28 @@ export function Profile({
         setLoading(false);
       }
     };
-    loadProfile();
+
+    // Fetch only if user not yet loaded
+    if (!user) {
+      loadProfile();
+    } else {
+      setFormData({
+        name: user.name || '',
+        email: user.email || ''
+      });
+      setLoading(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // ✅ Runs once only
+
+  // ✅ Update local form when context user changes (no refetch)
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || ''
+      });
+    }
   }, [user]);
 
   const handleInputChange = (field, value) => {
@@ -61,9 +83,7 @@ export function Profile({
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result);
-      };
+      reader.onloadend = () => setProfileImage(reader.result);
       reader.readAsDataURL(file);
     }
   };
@@ -106,7 +126,6 @@ export function Profile({
             variant={variant}
             additionalInfo={additionalInfo}
           />
-
           {sidebar}
         </div>
 
@@ -121,13 +140,13 @@ export function Profile({
                 {isEditing ? 'Cancel' : 'Edit'}
               </button>
             </CardHeader>
+
             <CardContent>
               {error && <Alert variant="error">{error}</Alert>}
               <form onSubmit={handleSubmit} className="profile-form">
                 {typeof formFields === 'function'
                   ? formFields({ formData, handleInputChange, isEditing })
-                  : formFields
-                }
+                  : formFields}
 
                 {isEditing && (
                   <div className="profile-form-actions">

@@ -55,11 +55,8 @@ export function AuthProvider({ children }) {
 
       const data = await res.json();
       
-      // Store token
       setToken(data.token);
       localStorage.setItem("token", data.token);
-
-      // Set user from response
       setUser({ 
         email: data.email, 
         role: data.role, 
@@ -77,29 +74,28 @@ export function AuthProvider({ children }) {
   };
 
   // ===== FETCH PROFILE =====
-  const fetchProfile = async (overrideToken) => {
-    const t = overrideToken || token;
-    if (!t) return null;
+  const fetchProfile = async () => {
+    if (!token) return null;
 
     try {
       const res = await fetch(`${API_BASE}/profile`, {
         headers: { 
-          "Authorization": `Bearer ${t}`,
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
       });
 
       if (!res.ok) {
         if (res.status === 401) {
-          logout(); // Token expired
+          logout();
           return null;
         }
         throw new Error("Failed to fetch profile");
       }
 
       const data = await res.json();
-      setUser(data.data || data); // Handle both response formats
-      return data.data || data;
+      setUser(data); // ✅ FIXED: Use data directly, not data.data
+      return data;
     } catch (error) {
       console.error("Fetch profile error:", error);
       throw error;
@@ -126,8 +122,8 @@ export function AuthProvider({ children }) {
       }
 
       const data = await res.json();
-      setUser(data.data || data);
-      return data.data || data;
+      setUser(data); // ✅ FIXED: Use data directly
+      return data;
     } catch (error) {
       console.error("Update profile error:", error);
       throw error;
@@ -142,14 +138,15 @@ export function AuthProvider({ children }) {
   };
 
   // ===== AUTO-FETCH PROFILE ON PAGE LOAD =====
+  // ✅ FIXED: Only run ONCE when token exists and user is null
   useEffect(() => {
     if (token && !user) {
       fetchProfile().catch(err => {
         console.warn("Failed to fetch profile on load:", err);
-        // Don't logout on fetch error, user might still be valid
       });
     }
-  }, [token, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]); // ✅ FIXED: Only depend on token, not user
 
   return (
     <AuthContext.Provider
