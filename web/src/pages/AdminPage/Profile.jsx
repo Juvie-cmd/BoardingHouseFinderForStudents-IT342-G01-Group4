@@ -4,7 +4,7 @@ import { FormInput, FormSelect, FormTextarea } from '../../components/UI';
 import './styles/Profile.css';
 
 export function AdminProfile() {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
 
   const initialFormData = {
     name: user?.name || '',
@@ -164,6 +164,8 @@ export function AdminProfile() {
       sidebar={sidebar}
       variant="admin"
       layoutVariant="admin"
+      additionalInfo={additionalInfo}
+      onSubmit={updateProfile} // ✅ Backend integration
     />
   );
 }

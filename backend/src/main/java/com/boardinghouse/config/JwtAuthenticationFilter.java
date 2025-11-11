@@ -33,16 +33,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String jwt = authHeader.substring(7);
-
         try {
+            final String authHeader = request.getHeader("Authorization");
+
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            String jwt = authHeader.substring(7);
+
             String userEmail = jwtService.extractUsername(jwt);
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -57,10 +57,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.debug("JWT authentication set for user: {}", userEmail);
+                } else {
+                    log.warn("JWT token is invalid for user: {}", userEmail);
                 }
             }
         } catch (Exception ex) {
-            log.error("JWT authentication failed", ex);
+            log.error("JWT authentication failed: {}", ex.getMessage(), ex);
+            // Don't set authentication, let the request proceed
+            // Spring Security will handle the unauthorized response
         }
 
         filterChain.doFilter(request, response);

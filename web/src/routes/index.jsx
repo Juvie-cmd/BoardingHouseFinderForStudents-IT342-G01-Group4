@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 import { PublicRoute } from './PublicRoute';
@@ -16,16 +16,16 @@ import { AdminDashboard } from '../pages/AdminPage/AdminDashboard';
 import { AdminProfile } from '../pages/AdminPage/Profile';
 
 export function AppRoutes() {
-  const { isAuthenticated, user } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated, user, loading } = useAuth();
 
-  let homeRoute = "/";
-  if (isAuthenticated) {
-    if (user?.role === 'student') homeRoute = "/search";
-    else if (user?.role === 'landlord') homeRoute = "/landlord/dashboard";
-    else if (user?.role === 'admin') homeRoute = "/admin/dashboard";
-    else homeRoute = "/search";
-  }
+if (loading) return <div>Loading...</div>; // ✅ keep this
+
+let homeRoute = "/";
+if (isAuthenticated && user) {  // Only when user is loaded
+  if (user.role === "student") homeRoute = "/search";
+  else if (user.role === "landlord") homeRoute = "/landlord/dashboard";
+  else if (user.role === "admin") homeRoute = "/admin/dashboard";
+}
 
   return (
     <Routes>
@@ -34,79 +34,53 @@ export function AppRoutes() {
 
       <Route path="/home" element={<Navigate to={homeRoute} replace />} />
 
-      <Route
-        path="/search"
-        element={
-          <PrivateRoute allowedRoles={['student']}>
-            <StudentDashboard onViewDetails={(id) => navigate(`/details/${id}`)} />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/details/:listingId"
-        element={<PrivateRoute allowedRoles={['student']}><ListingDetailsWrapper /></PrivateRoute>}
-      />
-      <Route
-        path="/student/profile"
-        element={
-          <PrivateRoute allowedRoles={['student']}>
-            <StudentProfile />
-          </PrivateRoute>
-        }
-      />
+      <Route path="/search" element={
+        <PrivateRoute allowedRoles={['student']}>
+          <StudentDashboard />
+        </PrivateRoute>
+      }/>
+      <Route path="/details/:listingId" element={
+        <PrivateRoute allowedRoles={['student']}>
+          <ListingDetailsWrapper />
+        </PrivateRoute>
+      }/>
+      <Route path="/student/profile" element={
+        <PrivateRoute allowedRoles={['student']}>
+          <StudentProfile />
+        </PrivateRoute>
+      }/>
 
-      <Route
-        path="/landlord/dashboard"
-        element={
-          <PrivateRoute allowedRoles={['landlord']}>
-            <LandlordDashboard
-              onCreateListing={() => navigate('/landlord/listings/new')}
-              onEditListing={(id) => navigate(`/landlord/listings/edit/${id}`)}
-            />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/landlord/listings/new"
-        element={
-          <PrivateRoute allowedRoles={['landlord']}>
-            <ListingFormWrapper />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/landlord/listings/edit/:listingId"
-        element={
-          <PrivateRoute allowedRoles={['landlord']}>
-            <ListingFormWrapper />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/landlord/profile"
-        element={
-          <PrivateRoute allowedRoles={['landlord']}>
-            <LandlordProfile />
-          </PrivateRoute>
-        }
-      />
+      <Route path="/landlord/dashboard" element={
+        <PrivateRoute allowedRoles={['landlord']}>
+          <LandlordDashboard />
+        </PrivateRoute>
+      }/>
+      <Route path="/landlord/listings/new" element={
+        <PrivateRoute allowedRoles={['landlord']}>
+          <ListingFormWrapper />
+        </PrivateRoute>
+      }/>
+      <Route path="/landlord/listings/edit/:listingId" element={
+        <PrivateRoute allowedRoles={['landlord']}>
+          <ListingFormWrapper />
+        </PrivateRoute>
+      }/>
+      <Route path="/landlord/profile" element={
+        <PrivateRoute allowedRoles={['landlord']}>
+          <LandlordProfile />
+        </PrivateRoute>
+      }/>
 
-      <Route
-        path="/admin/dashboard"
-        element={
-          <PrivateRoute allowedRoles={['admin']}>
-            <AdminDashboard />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/admin/profile"
-        element={
-          <PrivateRoute allowedRoles={['admin']}>
-            <AdminProfile />
-          </PrivateRoute>
-        }
-      />
+      <Route path="/admin/dashboard" element={
+        <PrivateRoute allowedRoles={['admin']}>
+          <AdminDashboard />
+        </PrivateRoute>
+      }/>
+      <Route path="/admin/profile" element={
+        <PrivateRoute allowedRoles={['admin']}>
+          <AdminProfile />
+        </PrivateRoute>
+      }/>
 
       <Route path="*" element={<Navigate to={homeRoute} replace />} />
     </Routes>

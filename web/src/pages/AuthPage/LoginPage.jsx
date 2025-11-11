@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Card, FormInput, Alert } from '../../components/UI';
 import './styles/LoginPage.css';
 
 export function LoginPage() {
-  const { login, register } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchParams] = useSearchParams(); 
+  const { login, register, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  // Determine initial tab based on URL param, default to 'login'
   const initialTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
-  const [activeTab, setActiveTab] = useState(initialTab); 
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -23,13 +22,12 @@ export function LoginPage() {
   const [registerPassword, setRegisterPassword] = useState('');
   const [registerRole, setRegisterRole] = useState('student');
 
-  // Validation errors and success messages
+  // Messages
   const [loginError, setLoginError] = useState('');
   const [loginSuccess, setLoginSuccess] = useState('');
   const [registerError, setRegisterError] = useState('');
   const [registerSuccess, setRegisterSuccess] = useState('');
 
-  // 👇 3. Use useEffect to potentially switch tab if URL changes after load (optional but good practice)
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     const logoutParam = searchParams.get('logout');
@@ -37,25 +35,19 @@ export function LoginPage() {
     if (tabParam === 'register' && activeTab !== 'register') {
       setActiveTab('register');
     } else if (tabParam !== 'register' && activeTab !== 'login') {
-       setActiveTab('login'); // Default back to login if param is missing/invalid
+      setActiveTab('login');
     }
 
-    // Check for logout success message
     if (logoutParam === 'success') {
       setLoginSuccess('You have been successfully logged out!');
-      // Clear the message after 5 seconds
-      setTimeout(() => {
-        setLoginSuccess('');
-      }, 5000);
+      setTimeout(() => setLoginSuccess(''), 5000);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]); // Re-run only if searchParams changes
-
+  }, [searchParams, activeTab]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoginError('');
-    setLoginSuccess(''); // Clear success message when attempting login
+    setLoginSuccess('');
 
     // Validation
     if (!loginEmail || !loginPassword) {
@@ -73,14 +65,16 @@ export function LoginPage() {
       return;
     }
 
-    setIsLoading(true);
     try {
       await login(loginEmail, loginPassword);
-      // Navigation happens automatically via PublicRoute
-    } catch(err) {
+      setLoginSuccess('Login successful! Redirecting...');
+      setTimeout(() => {
+        // Let useEffect in App.jsx handle navigation based on user role
+        navigate('/');
+      }, 500);
+    } catch (err) {
       console.error("Login failed:", err);
       setLoginError(err.message || 'Login failed. Please check your credentials.');
-      setIsLoading(false); // Stop loading on error
     }
   };
 
@@ -110,38 +104,27 @@ export function LoginPage() {
       return;
     }
 
-    setIsLoading(true);
     try {
       const result = await register(registerName, registerEmail, registerPassword, registerRole);
 
-      // Show success message
       setRegisterSuccess(result.message || 'Account created successfully!');
 
-      // Clear form fields
+      // Clear form
       setRegisterName('');
       setRegisterEmail('');
       setRegisterPassword('');
       setRegisterRole('student');
 
-      // Switch to login tab after 2 seconds
+      // Switch to login after 2 seconds
       setTimeout(() => {
         setActiveTab('login');
-        setLoginError(''); // Clear any login errors
         setRegisterSuccess('');
-        // Show success message on login tab
         setLoginSuccess('Account created successfully! Please login with your credentials.');
-
-        // Clear the login success message after 5 seconds
-        setTimeout(() => {
-          setLoginSuccess('');
-        }, 5000);
+        setTimeout(() => setLoginSuccess(''), 5000);
       }, 2000);
-
-      setIsLoading(false);
-    } catch(err) {
+    } catch (err) {
       console.error("Registration failed:", err);
       setRegisterError(err.message || 'Registration failed. Please try again.');
-      setIsLoading(false);
     }
   };
 
@@ -163,12 +146,14 @@ export function LoginPage() {
             <button
               className={`login-tab-trigger ${activeTab === 'login' ? 'active' : ''}`}
               onClick={() => setActiveTab('login')}
+              disabled={isLoading}
             >
               Login
             </button>
             <button
               className={`login-tab-trigger ${activeTab === 'register' ? 'active' : ''}`}
               onClick={() => setActiveTab('register')}
+              disabled={isLoading}
             >
               Register
             </button>
@@ -185,13 +170,11 @@ export function LoginPage() {
                 {loginSuccess && <Alert variant="success">{loginSuccess}</Alert>}
                 {loginError && <Alert variant="error">{loginError}</Alert>}
 
-                {/* Admin Login Info */}
                 <Alert variant="info">
-                  <strong>Admin Login:</strong>
+                  <strong>Test Admin Login:</strong>
                   <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
                     Email: admin@boardinghouse.com<br />
-                    Password: admin123 <br/><br />
-                    <b>note:</b> this is for admin login purposes, it will be deleted in the final
+                    Password: admin123
                   </div>
                 </Alert>
 
@@ -202,6 +185,7 @@ export function LoginPage() {
                   placeholder="student@university.edu"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
+                  disabled={isLoading}
                   required
                 />
 
@@ -211,11 +195,16 @@ export function LoginPage() {
                   type="password"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
+                  disabled={isLoading}
                   required
                 />
 
-                <button type="submit" className="button button-primary button-full-width" disabled={isLoading}>
-                  {isLoading ? 'Loading...' : 'Login'}
+                <button 
+                  type="submit" 
+                  className="button button-primary button-full-width" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Logging in...' : 'Login'}
                 </button>
               </form>
             </div>
@@ -239,6 +228,7 @@ export function LoginPage() {
                   placeholder="John Doe"
                   value={registerName}
                   onChange={(e) => setRegisterName(e.target.value)}
+                  disabled={isLoading}
                   required
                 />
 
@@ -249,6 +239,7 @@ export function LoginPage() {
                   placeholder="student@university.edu"
                   value={registerEmail}
                   onChange={(e) => setRegisterEmail(e.target.value)}
+                  disabled={isLoading}
                   required
                 />
 
@@ -258,6 +249,7 @@ export function LoginPage() {
                   type="password"
                   value={registerPassword}
                   onChange={(e) => setRegisterPassword(e.target.value)}
+                  disabled={isLoading}
                   required
                 />
 
@@ -265,17 +257,37 @@ export function LoginPage() {
                   <label>Register as</label>
                   <div className="radio-group">
                     <div className="radio-item">
-                      <input type="radio" value="student" id="register-student" name="register-role" checked={registerRole === 'student'} onChange={() => setRegisterRole('student')} />
+                      <input 
+                        type="radio" 
+                        value="student" 
+                        id="register-student" 
+                        name="register-role" 
+                        checked={registerRole === 'student'} 
+                        onChange={() => setRegisterRole('student')}
+                        disabled={isLoading}
+                      />
                       <label htmlFor="register-student">Student</label>
                     </div>
                     <div className="radio-item">
-                      <input type="radio" value="landlord" id="register-landlord" name="register-role" checked={registerRole === 'landlord'} onChange={() => setRegisterRole('landlord')} />
+                      <input 
+                        type="radio" 
+                        value="landlord" 
+                        id="register-landlord" 
+                        name="register-role" 
+                        checked={registerRole === 'landlord'} 
+                        onChange={() => setRegisterRole('landlord')}
+                        disabled={isLoading}
+                      />
                       <label htmlFor="register-landlord">Landlord</label>
                     </div>
                   </div>
                 </div>
 
-                <button type="submit" className="button button-primary button-full-width" disabled={isLoading}>
+                <button 
+                  type="submit" 
+                  className="button button-primary button-full-width" 
+                  disabled={isLoading}
+                >
                   {isLoading ? 'Creating...' : 'Create Account'}
                 </button>
               </form>

@@ -20,20 +20,20 @@ public class ProfileController {
     private final ProfileService profileService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse> getProfile(Authentication authentication) {
+    public ResponseEntity<UserProfileResponse> getProfile(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         UserProfileResponse profile = profileService.getProfile(user.getId());
-        return ResponseEntity.ok(ApiResponse.success("Profile retrieved successfully", profile));
+        return ResponseEntity.ok(profile);
     }
 
     @PutMapping
-    public ResponseEntity<ApiResponse> updateProfile(
+    public ResponseEntity<UserProfileResponse> updateProfile(
             Authentication authentication,
             @Valid @RequestBody ProfileUpdateRequest request
     ) {
         User user = (User) authentication.getPrincipal();
         UserProfileResponse profile = profileService.updateProfile(user.getId(), request);
-        return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", profile));
+        return ResponseEntity.ok(profile);
     }
 
     @DeleteMapping

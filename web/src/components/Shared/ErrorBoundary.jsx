@@ -8,12 +8,11 @@ export class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI
+    console.error('ErrorBoundary caught error:', error);
     return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log the error to console or send to an error reporting service
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({
       error: error,
@@ -23,13 +22,11 @@ export class ErrorBoundary extends React.Component {
 
   handleReset = () => {
     this.setState({ hasError: false, error: null, errorInfo: null });
-    // Optionally reload the page or navigate to home
     window.location.href = '/';
   };
 
   render() {
     if (this.state.hasError) {
-      // Custom fallback UI
       return (
         <div className="error-boundary-container">
           <div className="error-boundary-card">
