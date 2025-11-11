@@ -1,77 +1,104 @@
-// src/context/AuthContext.jsx
-
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
-
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const API_BASE = "http://localhost:8080/api"; // your Spring Boot backend URL
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  // Mock database of registered users (in real app, this comes from backend)
-  const [registeredUsers, setRegisteredUsers] = useState({});
+  const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const isAuthenticated = !!token;
 
-  const isAuthenticated = !!user;
-
-  // Mock login function
-  const login = async (email, password) => {
-    await sleep(1000); // Simulate API call
-    console.log("Logging in with:", { email, password });
-
-    // Check for admin credentials
-    if (email === 'admin@boardinghouse.com' && password === 'admin123') {
-      setUser({
-        name: 'Administrator',
-        email: email,
-        role: 'admin',
-      });
-      return;
-    }
-
-    // Check if user exists in registered users
-    const registeredUser = registeredUsers[email];
-    const userName = email.split('@')[0];
-
-    // Determine role based on registered user or email domain
-    let userRole = 'student'; // default
-    if (registeredUser) {
-      userRole = registeredUser.role;
-    } else {
-      // For demo purposes: determine role by email pattern
-      if (email.includes('landlord') || email.includes('owner')) {
-        userRole = 'landlord';
-      }
-    }
-
-    setUser({
-      name: registeredUser?.name || userName,
-      email: email,
-      role: userRole,
-    });
-  };
-
-  // Mock register function
+  // ===== REGISTER =====
   const register = async (name, email, password, role) => {
-    await sleep(1000); // Simulate API call
-    console.log("Registering with:", { name, email, password, role });
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, role }),
+    });
 
-    // Store the registered user
-    setRegisteredUsers(prev => ({
-      ...prev,
-      [email]: { name, email, role }
-    }));
-
-    return { success: true, message: 'Account created successfully!' };
+    if (!res.ok) throw new Error("Registration failed");
+    return await res.json();
   };
 
-  // Mock logout function
+  // ===== LOGIN =====
+  const login = async (email, password) => {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) throw new Error("Invalid credentials");
+    const data = await res.json();
+
+    setToken(data.token);
+    localStorage.setItem("token", data.token);
+
+    // set basic user info
+    setUser({ email: data.email, role: data.role, name: data.name });
+
+    // fetch full profile safely after login
+    try {
+      await fetchProfile(data.token);
+    } catch (err) {
+      console.warn("Failed to fetch profile:", err);
+    }
+
+    return data;
+  };
+
+  // ===== FETCH PROFILE =====
+  const fetchProfile = async (overrideToken) => {
+    const t = overrideToken || token;
+    if (!t) return null;
+
+    const res = await fetch(`${API_BASE}/profile`, {
+      headers: { Authorization: `Bearer ${t}` },
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch profile");
+    const data = await res.json();
+    setUser(data);
+    return data;
+  };
+
+  // ===== UPDATE PROFILE =====
+  const updateProfile = async (updates) => {
+    if (!token) throw new Error("Not authenticated");
+
+    const res = await fetch(`${API_BASE}/profile`, {
+      method: "PUT",
+      headers: { 
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}` 
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!res.ok) throw new Error("Failed to update profile");
+    const data = await res.json();
+    setUser(data);
+    return data;
+  };
+
+  // ===== LOGOUT =====
   const logout = () => {
     setUser(null);
-    return { success: true, message: 'You have been successfully logged out!' };
+    setToken(null);
+    localStorage.removeItem("token");
   };
 
+  // ===== AUTO-FETCH PROFILE ON PAGE LOAD =====
+  useEffect(() => {
+    if (token && !user) {
+      fetchProfile().catch(err => console.warn("Failed to fetch profile:", err));
+    }
+  }, [token]);
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated, login, register, logout, fetchProfile, updateProfile }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -79,8 +106,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }
