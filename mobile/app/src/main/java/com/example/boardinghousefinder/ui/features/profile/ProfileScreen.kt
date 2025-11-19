@@ -1,4 +1,4 @@
-package com.example.boardinghousefinder.ui.screens
+package com.example.boardinghousefinder.ui.features.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,12 +20,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.boardinghousefinder.ui.theme.BoardingHouseFinderTheme
@@ -95,7 +93,7 @@ fun ProfileScreen(navController: NavController) {
                 ProfileMenuItem(
                     icon = Icons.Outlined.Edit,
                     text = "Edit Profile",
-                    onClick = { /* TODO: Navigate to Edit Profile */ }
+                    onClick = { navController.navigate("editProfile") }
                 )
                 ProfileMenuItem(
                     icon = Icons.Outlined.BookmarkBorder,
