@@ -1,31 +1,46 @@
 // src/components/LandingPage/LandingPage.jsx
 
-import React, { useState } from 'react';
-// 👇 1. Import useNavigate
-import { useNavigate } from 'react-router-dom';
-// import './LandingPage.css'; 
-import './styles/LandingPage.css'; 
+import React, { useState, useEffect } from 'react';
+// 👇 1. Import useNavigate and useSearchParams
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { HomeIcon, UsersIcon, TrophyIcon, StarIcon, UserIcon, ShieldIcon, SearchIcon, MessageIcon, ChartIcon, CheckIcon, CloseIcon, MenuIcon } from '../Shared/Icons';
+// import './LandingPage.css';
+import './styles/LandingPage.css';
 import './styles/HeroSection.css';
 import './styles/HeroSection.css';
 
 
 
 export function LandingPage() {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [logoutSuccess, setLogoutSuccess] = useState(false);
+
+  // Check for logout success message
+  useEffect(() => {
+    const logoutParam = searchParams.get('logout');
+    if (logoutParam === 'success') {
+      setLogoutSuccess(true);
+      // Clear the message after 5 seconds
+      setTimeout(() => {
+        setLogoutSuccess(false);
+      }, 5000);
+    }
+  }, [searchParams]);
 
   const stats = [
-    { label: 'Active Listings', value: '500+', icon: '🏠' }, 
-    { label: 'Happy Students', value: '2,000+', icon: '👥' },
-    { label: 'Universities', value: '50+', icon: '🏆' },
-    { label: 'Average Rating', value: '4.8', icon: '⭐' },
+    { label: 'Active Listings', value: '500+', icon: <HomeIcon size={24} /> },
+    { label: 'Happy Students', value: '2,000+', icon: <UsersIcon size={24} /> },
+    { label: 'Universities', value: '50+', icon: <TrophyIcon size={24} /> },
+    { label: 'Average Rating', value: '4.8', icon: <StarIcon size={24} fill="#FFD700" color="#FFD700" /> },
   ];
 
   const features = [
-    { icon: '🛡️', title: 'Verified Properties', description: 'Every listing is verified and inspected for safety and quality standards', colorClass: 'feature-icon-blue' },
-    { icon: '🔍', title: 'Smart Search', description: 'Advanced filters help you find exactly what you need near your campus', colorClass: 'feature-icon-purple' },
-    { icon: '💬', title: 'Direct Communication', description: 'Message landlords directly through our secure platform', colorClass: 'feature-icon-green' },
-    { icon: '📈', title: 'Best Prices', description: 'Compare prices and find the best deals for student housing', colorClass: 'feature-icon-yellow' },
+    { icon: <ShieldIcon size={24} />, title: 'Verified Properties', description: 'Every listing is verified and inspected for safety and quality standards', colorClass: 'feature-icon-blue' },
+    { icon: <SearchIcon size={24} />, title: 'Smart Search', description: 'Advanced filters help you find exactly what you need near your campus', colorClass: 'feature-icon-purple' },
+    { icon: <MessageIcon size={24} />, title: 'Direct Communication', description: 'Message landlords directly through our secure platform', colorClass: 'feature-icon-green' },
+    { icon: <ChartIcon size={24} />, title: 'Best Prices', description: 'Compare prices and find the best deals for student housing', colorClass: 'feature-icon-yellow' },
   ];
 
    const howItWorks = [
@@ -53,11 +68,35 @@ export function LandingPage() {
 
   return (
     <div className="landing-page">
+      {/* Logout Success Message */}
+      {logoutSuccess && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 9999,
+          backgroundColor: '#10b981',
+          color: 'white',
+          padding: '1rem 2rem',
+          borderRadius: '8px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          fontSize: '0.95rem',
+          fontWeight: '500'
+        }}>
+          <CheckIcon size={20} />
+          <span>You have been successfully logged out!</span>
+        </div>
+      )}
+
       {/* --- Navigation --- */}
       <nav className="main-nav">
         <div className="container nav-container">
           <div className="nav-logo">
-            <div className="nav-logo-icon">🏠</div>
+            <div className="nav-logo-icon"><HomeIcon size={24} /></div>
             <span>BoardingHouseFinder</span>
           </div>
 
@@ -73,7 +112,7 @@ export function LandingPage() {
 
           {/* Mobile Menu Button */}
           <button className="nav-mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? '✕' : '☰'}
+            {mobileMenuOpen ? <CloseIcon size={24} /> : <MenuIcon size={24} />}
           </button>
         </div>
 
@@ -142,14 +181,14 @@ export function LandingPage() {
                         <p className="image-card-price">₱300/month</p>
                       </div>
                       <div className="image-card-rating">
-                        <span className="icon">⭐</span> 4.8
+                        <span className="icon"><StarIcon size={16} fill="#FFD700" color="#FFD700" /></span> 4.8
                       </div>
                    </div>
                  </div>
               </div>
             </div>
             <div className="hero-landing-float-stat">
-               <div className="float-stat-icon green">✔️</div>
+               <div className="float-stat-icon green"><CheckIcon size={20} /></div>
                <div>
                  <p className="text-muted small-text">Verified</p>
                  <p className="float-stat-value">100%</p>
@@ -189,7 +228,7 @@ export function LandingPage() {
                <div key={index} className="card feature-card">
                  <div className="card-content feature-card-content">
                    <div className={`feature-icon-wrapper ${feature.colorClass}`}>
-                     {feature.icon}
+                     <span className="icon">{feature.icon}</span>
                    </div>
                    <h3>{feature.title}</h3>
                    <p className="feature-description">{feature.description}</p>
@@ -235,12 +274,12 @@ export function LandingPage() {
                  <div className="card-content">
                    <div className="testimonial-rating">
                      {[...Array(testimonial.rating)].map((_, i) => (
-                       <span key={i} className="icon rating-star">⭐</span>
+                       <span key={i} className="icon rating-star"><StarIcon size={16} fill="#FFD700" color="#FFD700" /></span>
                      ))}
                    </div>
                    <p className="testimonial-text">"{testimonial.text}"</p>
                    <div className="testimonial-author">
-                     <div className="avatar testimonial-avatar">👤</div>
+                     <div className="avatar testimonial-avatar"><UserIcon size={24} /></div>
                      <div>
                        <p className="testimonial-name">{testimonial.name}</p>
                        <p className="testimonial-role">{testimonial.role}</p>
@@ -282,7 +321,7 @@ export function LandingPage() {
           <div className="footer-grid">
             <div className="footer-col">
               <div className="footer-logo">
-                 <div className="nav-logo-icon">🏠</div>
+                 <div className="nav-logo-icon"><HomeIcon size={24} /></div>
                  <span>BoardingHouseFinder</span>
               </div>
               <p>Making student housing search safe, comfortable, and affordable since 2025.</p>

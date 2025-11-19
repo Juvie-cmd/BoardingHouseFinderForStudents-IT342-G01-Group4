@@ -1,6 +1,7 @@
 import { listings } from '../../data/listings';
 import { ImageWithFallback } from '../../components/Shared/ImageWithFallback';
 import { Dashboard, StatCard, PerformanceList, DataTable } from '../../components/Dashboard';
+import { HomeIcon, UsersIcon, MoneyIcon, StarIcon, EyeIcon, MessageIcon, ChartIcon, EditIcon, LocationIcon, PlusIcon, BarChartIcon } from '../../components/Shared/Icons';
 import './styles/LandlordDashboard.css';
 
 export function LandlordDashboard({ onCreateListing, onEditListing }) {
@@ -37,10 +38,10 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
 
   // Performance items for Overview
   const performanceItems = [
-    { icon: '👁️', label: 'Total Views', value: stats.viewsThisMonth, iconColor: 'blue' },
-    { icon: '💬', label: 'Inquiries', value: stats.totalInquiries, iconColor: 'purple' },
-    { icon: '📈', label: 'Conversion Rate', value: '7.2%', iconColor: 'green' },
-    { icon: '⭐', label: 'Avg Rating', value: stats.averageRating, iconColor: 'yellow' },
+    { icon: <EyeIcon size={20} />, label: 'Total Views', value: stats.viewsThisMonth, iconColor: 'blue' },
+    { icon: <MessageIcon size={20} />, label: 'Inquiries', value: stats.totalInquiries, iconColor: 'purple' },
+    { icon: <ChartIcon size={20} />, label: 'Conversion Rate', value: '7.2%', iconColor: 'green' },
+    { icon: <StarIcon size={20} fill="#FFD700" color="#FFD700" />, label: 'Avg Rating', value: stats.averageRating, iconColor: 'yellow' },
   ];
 
   // Inquiries table columns configuration
@@ -61,7 +62,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
       className: 'text-right',
       render: () => (
         <button className="button button-link button-small">
-          <span className="icon">💬</span> Reply
+          <span className="icon"><MessageIcon size={16} /></span> Reply
         </button>
       )
     }
@@ -73,7 +74,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
       className="button button-primary button-large"
       onClick={onCreateListing}
     >
-      <span className="icon">+</span> Create New Listing
+      <span className="icon"><PlusIcon size={20} /></span> Create New Listing
     </button>
   );
 
@@ -88,21 +89,21 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
               <StatCard
                 title="Total Listings"
                 value={stats.totalListings}
-                icon="🏠"
+                icon={<HomeIcon size={24} />}
                 iconColor="blue"
                 description={`${stats.activeListings} active`}
               />
               <StatCard
                 title="Total Inquiries"
                 value={stats.totalInquiries}
-                icon="💬"
+                icon={<MessageIcon size={24} />}
                 iconColor="purple"
                 description={`${recentInquiries.filter(i => i.status === 'New').length} new`}
               />
               <StatCard
                 title="Average Rating"
                 value={stats.averageRating}
-                icon="⭐"
+                icon={<StarIcon size={24} fill="#FFD700" color="#FFD700" />}
                 iconColor="yellow"
                 description={`${myListings.reduce((sum, l) => sum + (l.reviews || 0), 0)} reviews`}
               />
@@ -165,7 +166,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                       <div>
                         <h3>{listing.title}</h3>
                         <div className="listing-item-location">
-                          <span className="icon">📍</span> {listing.location}
+                          <span className="icon"><LocationIcon size={16} /></span> {listing.location}
                         </div>
                       </div>
                       <span className={`badge ${listing.available ? 'badge-success' : 'badge-secondary'}`}>
@@ -183,7 +184,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                       </div>
                       <div>
                         <p className="stat-label">Rating</p>
-                        <p className="stat-value"><span className="icon">⭐</span>{listing.rating}</p>
+                        <p className="stat-value"><span className="icon"><StarIcon size={14} fill="#FFD700" color="#FFD700" /></span>{listing.rating}</p>
                       </div>
                       <div>
                         <p className="stat-label">Reviews</p>
@@ -192,13 +193,13 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                     </div>
                     <div className="listing-item-actions">
                       <button className="button button-secondary button-small" onClick={() => onEditListing(listing.id)}>
-                        <span className="icon">✏️</span> Edit
+                        <span className="icon"><EditIcon size={16} /></span> Edit
                       </button>
                       <button className="button button-secondary button-small">
-                        <span className="icon">👁️</span> View
+                        <span className="icon"><EyeIcon size={16} /></span> View
                       </button>
                       <button className="button button-secondary button-small">
-                        <span className="icon">💬</span> Messages
+                        <span className="icon"><MessageIcon size={16} /></span> Messages
                       </button>
                     </div>
                   </div>
@@ -207,7 +208,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
             ))}
             <div className="add-listing-button-container">
               <button className="button button-primary" onClick={onCreateListing}>
-                <span className="icon">+</span> Add New Property
+                <span className="icon"><PlusIcon size={20} /></span> Add New Property
               </button>
             </div>
           </div>
@@ -237,7 +238,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
               <div className="card analytics-stat-card">
                 <div className="card-header analytics-card-header">
                   <span className="stat-label">Total Views</span>
-                  <span className="icon text-muted">📊</span>
+                  <span className="icon text-muted"><BarChartIcon size={18} /></span>
                 </div>
                 <div className="card-content">
                   <div className="stat-value-main">{stats.viewsThisMonth}</div>
@@ -247,7 +248,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
               <div className="card analytics-stat-card">
                 <div className="card-header analytics-card-header">
                   <span className="stat-label">Inquiries Received</span>
-                  <span className="icon text-muted">💬</span>
+                  <span className="icon text-muted"><MessageIcon size={18} /></span>
                 </div>
                 <div className="card-content">
                   <div className="stat-value-main">{stats.totalInquiries}</div>
@@ -257,7 +258,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
               <div className="card analytics-stat-card">
                 <div className="card-header analytics-card-header">
                   <span className="stat-label">Occupancy Rate</span>
-                  <span className="icon text-muted">🏠</span>
+                  <span className="icon text-muted"><HomeIcon size={18} /></span>
                 </div>
                 <div className="card-content">
                   <div className="stat-value-main">67%</div>
@@ -276,7 +277,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                     <div key={listing.id} className="listing-performance-item">
                       <div className="performance-item-header">
                         <span>{listing.title}</span>
-                        <span className="badge badge-warning">⭐ {listing.rating}</span>
+                        <span className="badge badge-warning"><StarIcon size={14} fill="#FFD700" color="#FFD700" /> {listing.rating}</span>
                       </div>
                       <div className="performance-item-stats">
                         <div>

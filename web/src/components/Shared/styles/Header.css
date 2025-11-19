@@ -25,9 +25,35 @@
 .header-logo span[role="img"] {
   font-size: 1.5rem;
 }
-.header-nav { display: flex; align-items: center; gap: 1.5rem; }
+.header-nav { display: flex; align-items: center; gap: 1rem; }
 .header-user-menu { display: flex; align-items: center; gap: 1rem; }
 .header-user-menu span { font-size: 0.875rem; font-weight: 500; }
+
+/* --- Button Link Styles --- */
+.button-link {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--medium-text);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.button-link:hover {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  border-color: var(--primary-color);
+}
+
+.button-link:active {
+  transform: scale(0.95);
+  background-color: var(--primary-color-hover);
+  border-color: var(--primary-color-hover);
+  color: var(--bg-white);
+}
 
 /* --- Logout Modal --- */
 .modal-overlay {
