@@ -33,9 +33,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
+        allWarningsAsErrors = false
+        freeCompilerArgs += listOf(
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+        )
     }
+
+
     buildFeatures {
         compose = true
     }
@@ -52,8 +59,8 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.navigation.runtime.ktx)
-
-    // implementation("androidx.navigation:navigation-compose:2.8.3") // <-- REMOVED THIS CONFLICTING LINE
+    implementation("androidx.compose.material3:material3:1.3.1")
+    implementation("androidx.compose.material:material-icons-extended:1.5.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
