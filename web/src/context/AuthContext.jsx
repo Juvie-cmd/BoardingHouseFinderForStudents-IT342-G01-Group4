@@ -1,3 +1,4 @@
+// AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
@@ -7,7 +8,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
   const isAuthenticated = !!token;
 
   // ===== REGISTER =====
@@ -24,12 +24,15 @@ export function AuthProvider({ children }) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Registration failed");
       }
-      
+
       const data = await res.json();
       setToken(data.token);
       localStorage.setItem("token", data.token);
-      setUser({ email: data.email, role: data.role, name: data.name, id: data.id });
-      
+
+      const userData = { email: data.email, role: data.role, name: data.name, id: data.id };
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
+
       return data;
     } catch (error) {
       console.error("Registration error:", error);
@@ -55,18 +58,12 @@ export function AuthProvider({ children }) {
       }
 
       const data = await res.json();
-      
-      // Store token
       setToken(data.token);
       localStorage.setItem("token", data.token);
 
-      // Set user from response
-      setUser({ 
-        email: data.email, 
-        role: data.role, 
-        name: data.name, 
-        id: data.id 
-      });
+      const userData = { email: data.email, role: data.role, name: data.name, id: data.id };
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
 
       return data;
     } catch (error) {
@@ -76,6 +73,26 @@ export function AuthProvider({ children }) {
       setIsLoading(false);
     }
   };
+
+  // ===== GOOGLE OAUTH CALLBACK =====
+  const handleGoogleCallback = async ({ token, email, name, role, id, picture }) => {
+  setToken(token);
+  localStorage.setItem("token", token);
+
+  const userData = { email, name, role, id: Number(id), picture };
+  setUser(userData);
+  localStorage.setItem("user", JSON.stringify(userData));
+
+  // Optional: fetch full profile from backend
+  if (token) {
+    try {
+      await fetchProfile();
+    } catch (err) {
+      console.warn("Failed to fetch profile after Google login:", err);
+    }
+  }
+};
+
 
   // ===== FETCH PROFILE =====
   const fetchProfile = async () => {
@@ -91,16 +108,16 @@ export function AuthProvider({ children }) {
 
       if (!res.ok) {
         if (res.status === 401) {
-          logout(); // Token expired
+          logout();
           return null;
         }
         throw new Error("Failed to fetch profile");
       }
 
       const data = await res.json();
-      const profileData = data.data || data;
-      setUser(profileData);
-      return profileData;
+      setUser(data);
+      localStorage.setItem("user", JSON.stringify(data));
+      return data;
     } catch (error) {
       console.error("Fetch profile error:", error);
       throw error;
@@ -111,7 +128,6 @@ export function AuthProvider({ children }) {
   const updateProfile = async (updates) => {
     if (!token) throw new Error("Not authenticated");
 
-    setIsLoading(true);
     try {
       const res = await fetch(`${API_BASE}/profile`, {
         method: "PUT",
@@ -128,14 +144,12 @@ export function AuthProvider({ children }) {
       }
 
       const data = await res.json();
-      const profileData = data.data || data;
-      setUser(profileData);
-      return profileData;
+      setUser(data);
+      localStorage.setItem("user", JSON.stringify(data));
+      return data;
     } catch (error) {
       console.error("Update profile error:", error);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -144,30 +158,20 @@ export function AuthProvider({ children }) {
     setUser(null);
     setToken(null);
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
   };
 
-  // ===== AUTO-FETCH PROFILE ON PAGE LOAD (ONLY ONCE) =====
+  // ===== RESTORE USER FROM LOCALSTORAGE ON PAGE LOAD =====
   useEffect(() => {
-    const initializeAuth = async () => {
-      if (token && !user && !isInitialized) {
-        setIsLoading(true);
-        try {
-          await fetchProfile();
-        } catch (err) {
-          console.warn("Failed to fetch profile on load:", err);
-          // If profile fetch fails, clear invalid token
-          logout();
-        } finally {
-          setIsLoading(false);
-          setIsInitialized(true);
-        }
-      } else if (!token) {
-        setIsInitialized(true);
-      }
-    };
-
-    initializeAuth();
-  }, [token, isInitialized]); // Remove 'user' from dependencies
+    const storedUser = localStorage.getItem("user");
+    if (storedUser && !user) {
+      setUser(JSON.parse(storedUser));
+    } else if (token && !user) {
+      fetchProfile().catch(err => {
+        console.warn("Failed to fetch profile on load:", err);
+      });
+    }
+  }, [token]);
 
   return (
     <AuthContext.Provider
@@ -175,12 +179,12 @@ export function AuthProvider({ children }) {
         user, 
         isAuthenticated, 
         isLoading,
-        isInitialized,
         login, 
         register, 
         logout, 
         fetchProfile, 
-        updateProfile 
+        updateProfile,
+        handleGoogleCallback
       }}
     >
       {children}

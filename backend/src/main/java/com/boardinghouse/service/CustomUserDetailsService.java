@@ -16,8 +16,17 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-        return user; // Make sure your User entity implements UserDetails
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("No user found with email: " + email)
+                );
+
+        // If user is Google OAuth user but login attempt is via email/password
+        if ("GOOGLE".equalsIgnoreCase(user.getAuthProvider()) && (user.getPassword() == null || user.getPassword().isBlank())) {
+            throw new UsernameNotFoundException("This account uses Google Login. Use 'Login with Google'.");
+        }
+
+        return user; // User implements UserDetails → fully valid
     }
 }

@@ -3,20 +3,19 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Card, FormInput, Alert } from '../../components/UI';
 import './styles/LoginPage.css';
+import { FcGoogle } from "react-icons/fc";
 
 export function LoginPage() {
-  const { login, register, isLoading } = useAuth();
+  const { login, register, isLoading, handleGoogleCallback } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const initialTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
   const [activeTab, setActiveTab] = useState(initialTab);
 
-  // Login form state
+  // Form states
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-
-  // Register form state
   const [registerName, setRegisterName] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
@@ -27,6 +26,21 @@ export function LoginPage() {
   const [loginSuccess, setLoginSuccess] = useState('');
   const [registerError, setRegisterError] = useState('');
   const [registerSuccess, setRegisterSuccess] = useState('');
+
+ // Handle Google OAuth callback
+useEffect(() => {
+  const token = searchParams.get('token');
+  const email = searchParams.get('email');
+  const name = searchParams.get('name');
+  const role = searchParams.get('role');
+  const id = searchParams.get('id'); // 🔥 newly added
+
+  if (token && email) {
+    handleGoogleCallback({ token, email, name, role, id }); // 🔥 include id
+    navigate('/');
+  }
+}, [searchParams, handleGoogleCallback, navigate]);
+
 
   useEffect(() => {
     const tabParam = searchParams.get('tab');
@@ -49,7 +63,6 @@ export function LoginPage() {
     setLoginError('');
     setLoginSuccess('');
 
-    // Validation
     if (!loginEmail || !loginPassword) {
       setLoginError('Please fill in all fields');
       return;
@@ -68,12 +81,8 @@ export function LoginPage() {
     try {
       await login(loginEmail, loginPassword);
       setLoginSuccess('Login successful! Redirecting...');
-      setTimeout(() => {
-        // Let useEffect in App.jsx handle navigation based on user role
-        navigate('/');
-      }, 500);
+      setTimeout(() => navigate('/'), 500);
     } catch (err) {
-      console.error("Login failed:", err);
       setLoginError(err.message || 'Login failed. Please check your credentials.');
     }
   };
@@ -83,7 +92,6 @@ export function LoginPage() {
     setRegisterError('');
     setRegisterSuccess('');
 
-    // Validation
     if (!registerName || !registerEmail || !registerPassword) {
       setRegisterError('Please fill in all fields');
       return;
@@ -106,16 +114,12 @@ export function LoginPage() {
 
     try {
       const result = await register(registerName, registerEmail, registerPassword, registerRole);
-
       setRegisterSuccess(result.message || 'Account created successfully!');
-
-      // Clear form
       setRegisterName('');
       setRegisterEmail('');
       setRegisterPassword('');
       setRegisterRole('student');
 
-      // Switch to login after 2 seconds
       setTimeout(() => {
         setActiveTab('login');
         setRegisterSuccess('');
@@ -123,9 +127,12 @@ export function LoginPage() {
         setTimeout(() => setLoginSuccess(''), 5000);
       }, 2000);
     } catch (err) {
-      console.error("Registration failed:", err);
       setRegisterError(err.message || 'Registration failed. Please try again.');
     }
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
 
   return (
@@ -144,24 +151,23 @@ export function LoginPage() {
         <Card className="login-card-tabs">
           <div className="login-tabs-list">
             <button
-              className={`login-tab-trigger ${activeTab === 'login' ? 'active' : ''}`}
-              onClick={() => setActiveTab('login')}
-              disabled={isLoading}
+            className={`login-tab-trigger ${activeTab === 'login' ? 'active' : ''}`}
+            onClick={() => navigate('/login')}
+            disabled={isLoading}
             >
               Login
-            </button>
-            <button
+              </button>
+              <button
               className={`login-tab-trigger ${activeTab === 'register' ? 'active' : ''}`}
-              onClick={() => setActiveTab('register')}
+              onClick={() => navigate('/login?tab=register')}
               disabled={isLoading}
-            >
-              Register
-            </button>
-          </div>
-
-          {/* Login Tab */}
-          {activeTab === 'login' && (
-            <div className="login-tab-content">
+              >
+                Register
+                </button>
+                </div>
+                {/* Login Tab */}
+                {activeTab === 'login' && (
+                  <div className="login-tab-content">
               <div className="login-tab-header">
                 <h3>Welcome back</h3>
                 <p>Enter your credentials to access your account</p>
@@ -170,13 +176,18 @@ export function LoginPage() {
                 {loginSuccess && <Alert variant="success">{loginSuccess}</Alert>}
                 {loginError && <Alert variant="error">{loginError}</Alert>}
 
-                <Alert variant="info">
-                  <strong>Test Admin Login:</strong>
-                  <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
-                    Email: admin@boardinghouse.com<br />
-                    Password: admin123
-                  </div>
-                </Alert>
+                <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="button button-secondary button-full-width google-button"
+                disabled={isLoading}
+                >
+                  <FcGoogle size={20} style={{ marginRight: "8px" }} />
+                  Continue with Google
+                  </button>
+                  <div className="divider">
+                  <span>OR</span>
+                </div>
 
                 <FormInput
                   id="login-email"
@@ -220,6 +231,20 @@ export function LoginPage() {
               <form onSubmit={handleRegister} className="form-layout">
                 {registerSuccess && <Alert variant="success">{registerSuccess}</Alert>}
                 {registerError && <Alert variant="error">{registerError}</Alert>}
+
+                <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="button button-secondary button-full-width google-button"
+                disabled={isLoading}
+                >
+                  <FcGoogle size={20} style={{ marginRight: "8px" }} />
+                  Sign up with Google
+                  </button>
+
+                <div className="divider">
+                  <span>OR</span>
+                </div>
 
                 <FormInput
                   id="register-name"

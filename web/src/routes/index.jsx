@@ -14,6 +14,7 @@ import { LandlordDashboard } from '../pages/LandlordPage/LandlordDashboard';
 import { LandlordProfile } from '../pages/LandlordPage/Profile';
 import { AdminDashboard } from '../pages/AdminPage/AdminDashboard';
 import { AdminProfile } from '../pages/AdminPage/Profile';
+import GoogleCallbackPage from '../pages/GoogleCallback'; 
 
 export function AppRoutes() {
   const { isAuthenticated, user, loading } = useAuth();
@@ -31,6 +32,11 @@ if (isAuthenticated && user) {  // Only when user is loaded
     <Routes>
       <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+
+      {/* ===== New Google OAuth callback route ===== */}
+     <Route path="/google-callback" element={<GoogleCallbackPage />} />
+
+
 
       <Route path="/home" element={<Navigate to={homeRoute} replace />} />
 
