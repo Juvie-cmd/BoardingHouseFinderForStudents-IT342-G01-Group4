@@ -4,7 +4,7 @@ import { FormInput, FormSelect, FormTextarea } from '../../components/UI';
 import './styles/Profile.css';
 
 export function StudentProfile() {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
 
   const initialFormData = {
     name: user?.name || '',
@@ -64,7 +64,6 @@ export function StudentProfile() {
           onChange={(e) => handleInputChange('name', e.target.value)}
           disabled={!isEditing}
         />
-
         <FormInput
           id="email"
           label="Email"
@@ -73,7 +72,6 @@ export function StudentProfile() {
           onChange={(e) => handleInputChange('email', e.target.value)}
           disabled={!isEditing}
         />
-
         <FormInput
           id="phone"
           label="Phone Number"
@@ -83,7 +81,6 @@ export function StudentProfile() {
           onChange={(e) => handleInputChange('phone', e.target.value)}
           disabled={!isEditing}
         />
-
         <FormInput
           id="university"
           label="University"
@@ -92,7 +89,6 @@ export function StudentProfile() {
           onChange={(e) => handleInputChange('university', e.target.value)}
           disabled={!isEditing}
         />
-
         <FormSelect
           id="yearOfStudy"
           label="Year of Study"
@@ -102,7 +98,6 @@ export function StudentProfile() {
           placeholder="Select Year"
           disabled={!isEditing}
         />
-
         <FormInput
           id="budget"
           label="Monthly Budget"
@@ -112,7 +107,6 @@ export function StudentProfile() {
           onChange={(e) => handleInputChange('budget', e.target.value)}
           disabled={!isEditing}
         />
-
         <FormInput
           id="preferredLocation"
           label="Preferred Location"
@@ -121,7 +115,6 @@ export function StudentProfile() {
           onChange={(e) => handleInputChange('preferredLocation', e.target.value)}
           disabled={!isEditing}
         />
-
         <FormSelect
           id="roomType"
           label="Preferred Room Type"
@@ -152,6 +145,7 @@ export function StudentProfile() {
       initialFormData={initialFormData}
       formFields={formFields}
       settingsItems={settingsItems}
+      onSubmit={updateProfile} // ✅ Backend integration
     />
   );
 }

@@ -1,4 +1,5 @@
 import { ImageWithFallback } from './ImageWithFallback';
+import { BedIcon, StarIcon, HeartIcon } from './Icons';
 
 // Make sure the "export" keyword is here
 export function ListingCard({
@@ -31,11 +32,11 @@ export function ListingCard({
           alt={title}
           className="listing-image"
         />
-        <button 
+        <button
           className={`favorite-button ${isFavorite ? 'active' : ''}`}
           onClick={handleFavoriteClick}
         >
-          ❤️
+          <HeartIcon size={18} color={isFavorite ? '#ef4444' : '#fff'} fill={isFavorite ? '#ef4444' : 'none'} />
         </button>
       </div>
 
@@ -46,11 +47,11 @@ export function ListingCard({
 
         <div className="listing-amenities">
           <div className="listing-amenity-item">
-            <span className="icon">🛏️</span>
+            <span className="icon"><BedIcon size={16} /></span>
             <span>{roomType}</span>
           </div>
           <div className="listing-amenity-item listing-rating">
-            <span className="icon">⭐</span>
+            <span className="icon"><StarIcon size={16} fill="#FFD700" color="#FFD700" /></span>
             <span>{rating}</span>
             <span className="text-muted">({reviews})</span>
           </div>

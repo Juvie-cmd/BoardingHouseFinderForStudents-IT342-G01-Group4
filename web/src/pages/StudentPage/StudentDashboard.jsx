@@ -4,6 +4,7 @@ import { useState } from 'react';
 // Corrected import paths (two levels up)
 import { listings } from '../../data/listings';
 import { ImageWithFallback } from '../../components/Shared/ImageWithFallback';
+import { LocationIcon, MoneyIcon, HomeIcon, BedIcon, WifiIcon, StarIcon, HeartIcon } from '../../components/Shared/Icons';
 import './styles/StudentDashboard.css';
 
 
@@ -80,7 +81,7 @@ export function StudentDashboard({ onViewDetails }) {
                 <div className="search-grid-item" style={{ flexGrow: 2 }}>
                   <label className="form-label">Location</label>
                   <div className="search-grid-item-icon-wrapper">
-                    <span className="icon">📍</span>
+                    <span className="icon"><LocationIcon size={18} /></span>
                     <input
                       placeholder="Enter an address or area"
                       value={location}
@@ -162,10 +163,10 @@ export function StudentDashboard({ onViewDetails }) {
               >
                 Clear Search
               </button>
-              {location && <span className="badge badge-outline">📍 {location}</span>}
+              {location && <span className="badge badge-outline"><LocationIcon size={14} /> {location}</span>}
               {budget && budget !== 'any' && (
                 <span className="badge badge-outline">
-                  💰 {budget === 'low' ? 'Under ₱5,000' : budget === 'mid' ? '₱5,000-₱10,000' : '₱10,000+'}
+                  <MoneyIcon size={14} /> {budget === 'low' ? 'Under ₱5,000' : budget === 'mid' ? '₱5,000-₱10,000' : '₱10,000+'}
                 </span>
               )}
             </div>
@@ -194,31 +195,31 @@ export function StudentDashboard({ onViewDetails }) {
                     className="listing-image"
                   />
                   <span className="badge" style={{position: 'absolute', top: '0.75rem', left: '0.75rem', backgroundColor: 'var(--green-color)', color: 'white', padding: '0.25rem 0.75rem', borderRadius: '99px', fontSize: '0.75rem'}}>Featured</span>
-                  <button className="favorite-button">❤️</button>
+                  <button className="favorite-button"><HeartIcon size={18} color="#ef4444" /></button>
                 </div>
 
                 <div className="listing-card-content">
                   <div className="listing-info-header">
                     <h3>{listing.title}</h3>
                     <div className="listing-info">
-                      <span className="icon">📍</span> {listing.location}
+                      <span className="icon"><LocationIcon size={16} /></span> {listing.location}
                     </div>
                     <div className="listing-info">
-                      <span className="icon">🏠</span> {listing.distance} from campus
+                      <span className="icon"><HomeIcon size={16} /></span> {listing.distance} from campus
                     </div>
                   </div>
 
                   <div className="listing-amenities">
                     <div className="listing-amenity-item">
-                      <span className="icon">🛏️</span>
+                      <span className="icon"><BedIcon size={16} /></span>
                       <span>{listing.roomType}</span>
                     </div>
                     <div className="listing-amenity-item">
-                      <span className="icon">📶</span>
+                      <span className="icon"><WifiIcon size={16} /></span>
                       <span>WiFi</span>
                     </div>
                     <div className="listing-amenity-item listing-rating">
-                      <span className="icon">⭐</span>
+                      <span className="icon"><StarIcon size={16} fill="#FFD700" color="#FFD700" /></span>
                       <span>{listing.rating}</span>
                       <span className="text-muted">({listing.reviews})</span>
                     </div>

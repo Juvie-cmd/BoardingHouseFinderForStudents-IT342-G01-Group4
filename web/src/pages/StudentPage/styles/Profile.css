@@ -150,6 +150,7 @@
 /* --- Account Settings Card --- */
 .profile-settings-card {
   grid-column: 1 / -1;
+  margin-top: 1.5rem; /* Add space between Profile Information and Account Settings */
 }
 
 .profile-settings-card .card-header {

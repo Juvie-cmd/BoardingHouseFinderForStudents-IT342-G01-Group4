@@ -1,26 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ProfileLayout, ProfileGrid, ProfileCard, SettingsSection } from './index';
-import { Card, CardHeader, CardContent } from '../UI';
+import { Card, CardHeader, CardContent, Alert } from '../UI';
 
 /**
- * Reusable Profile Component
- *
- * This component provides a consistent profile layout for all user roles.
- * Role-specific content is passed via props and children.
- *
- * @param {Object} props
- * @param {string} props.role - User role (e.g., "Student", "Landlord", "Administrator")
- * @param {string} props.roleVariant - Badge color variant (e.g., "primary", "success", "admin")
- * @param {string} props.headerTitle - Profile page title
- * @param {string} props.headerSubtitle - Profile page subtitle
- * @param {Object} props.initialFormData - Initial form data object
- * @param {Function} props.onSubmit - Form submit handler
- * @param {React.ReactNode} props.formFields - Form fields to render (function or component)
- * @param {Array} props.settingsItems - Array of settings items
- * @param {React.ReactNode} props.sidebar - Additional sidebar content (stats, activities, etc.)
- * @param {string} props.variant - Profile card variant
- * @param {React.ReactNode} props.additionalInfo - Additional info to display in profile card
+ * Reusable Profile Component with backend integration
  */
 export function Profile({
   role,
@@ -36,7 +20,7 @@ export function Profile({
   additionalInfo,
   layoutVariant
 }) {
-  const { user } = useAuth();
+  const { user, fetchProfile, updateProfile } = useAuth();
 
   const [formData, setFormData] = useState(initialFormData || {
     name: user?.name || '',
@@ -45,6 +29,51 @@ export function Profile({
 
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // ✅ Fetch profile ONLY once on mount (prevents flickering)
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        setLoading(true);
+        const profileData = await fetchProfile();
+        if (profileData) {
+          setFormData({
+            name: profileData.name || '',
+            email: profileData.email || ''
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
+        setError('Failed to load profile. Please refresh.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Fetch only if user not yet loaded
+    if (!user) {
+      loadProfile();
+    } else {
+      setFormData({
+        name: user.name || '',
+        email: user.email || ''
+      });
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // ✅ Runs once only
+
+  // ✅ Update local form when context user changes (no refetch)
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || ''
+      });
+    }
+  }, [user]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -54,22 +83,31 @@ export function Profile({
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result);
-      };
+      reader.onloadend = () => setProfileImage(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (onSubmit) {
-      onSubmit(formData);
-    } else {
-      console.log('Profile updated:', formData);
+    setError('');
+
+    try {
+      if (onSubmit) {
+        await onSubmit(formData);
+      } else {
+        await updateProfile(formData);
+      }
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Profile update failed:', err);
+      setError('Failed to update profile. Please try again.');
     }
-    setIsEditing(false);
   };
+
+  if (loading) {
+    return <div className="profile-loading">Loading profile...</div>;
+  }
 
   return (
     <ProfileLayout
@@ -88,7 +126,6 @@ export function Profile({
             variant={variant}
             additionalInfo={additionalInfo}
           />
-
           {sidebar}
         </div>
 
@@ -103,12 +140,13 @@ export function Profile({
                 {isEditing ? 'Cancel' : 'Edit'}
               </button>
             </CardHeader>
+
             <CardContent>
+              {error && <Alert variant="error">{error}</Alert>}
               <form onSubmit={handleSubmit} className="profile-form">
                 {typeof formFields === 'function'
                   ? formFields({ formData, handleInputChange, isEditing })
-                  : formFields
-                }
+                  : formFields}
 
                 {isEditing && (
                   <div className="profile-form-actions">

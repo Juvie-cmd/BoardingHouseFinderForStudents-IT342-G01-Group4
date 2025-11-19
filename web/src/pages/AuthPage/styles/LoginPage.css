@@ -10,12 +10,14 @@
   padding: 1rem;
   box-sizing: border-box;
 }
+
 .login-wrapper {
   width: 100%;
-  max-width: 28rem; /* 448px - perfect width for login forms */
+  max-width: 28rem;
   margin-left: auto;
   margin-right: auto;
-} 
+}
+
 .login-header {
   display: flex;
   align-items: center;
@@ -23,6 +25,7 @@
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
+
 .login-logo {
   width: 3rem;
   height: 3rem;
@@ -34,14 +37,29 @@
   font-size: 1.75rem;
   color: white;
 }
-.login-title { font-size: 1.5rem; font-weight: 600; color: var(--dark-text); }
-.login-subtitle { text-align: center; color: var(--medium-text); margin-bottom: 2rem; }
-.card.login-card-tabs { overflow: hidden; }
+
+.login-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--dark-text);
+}
+
+.login-subtitle {
+  text-align: center;
+  color: var(--medium-text);
+  margin-bottom: 2rem;
+}
+
+.card.login-card-tabs {
+  overflow: hidden;
+}
+
 .login-tabs-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
   background-color: var(--bg-light-gray);
 }
+
 .login-tab-trigger {
   background: none;
   border: none;
@@ -51,15 +69,97 @@
   color: var(--medium-text);
   cursor: pointer;
   border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
 }
+
 .login-tab-trigger.active {
   background-color: var(--bg-white);
   color: var(--primary-color);
   border-bottom-color: var(--primary-color);
 }
-.login-tab-content { padding: 1.5rem; }
-.login-tab-header { margin-bottom: 1.5rem; }
-.login-tab-header h3 { font-size: 1.25rem; }
-.login-tab-header p { color: var(--medium-text); font-size: 0.875rem; margin: 0; }
+
+.login-tab-trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-tab-content {
+  padding: 1.5rem;
+}
+
+.login-tab-header {
+  margin-bottom: 1.5rem;
+}
+
+.login-tab-header h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.login-tab-header p {
+  color: var(--medium-text);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Google Button Styles */
+.google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background-color: white !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--dark-text) !important;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.google-button:hover:not(:disabled) {
+  background-color: var(--bg-light-gray) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.google-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.google-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.google-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.25rem 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.divider span {
+  padding: 0 1rem;
+  color: var(--medium-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
 
 /* Alert styles are defined globally in App.css */

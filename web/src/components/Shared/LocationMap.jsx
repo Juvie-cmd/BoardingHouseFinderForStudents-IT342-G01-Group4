@@ -1,6 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { LocationIcon } from './Icons';
 
 // Fix for default marker icons in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -90,7 +91,7 @@ export function LocationMap({ location, coordinates = [10.3157, 123.8854], title
         </Marker>
       </MapContainer>
       <div className="map-overlay-info" onClick={handleOpenMaps} style={{ cursor: 'pointer' }}>
-        <span className="icon">📍</span>
+        <span className="icon"><LocationIcon size={16} /></span>
         <span>{location}</span>
       </div>
     </div>

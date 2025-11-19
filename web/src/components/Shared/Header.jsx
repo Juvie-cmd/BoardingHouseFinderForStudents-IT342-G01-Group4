@@ -4,6 +4,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext'; // Path depends on your structure
+import { HomeIcon } from './Icons';
 // 👇 Ensure this path is correct
 import './styles/Header.css';
 
@@ -23,7 +24,7 @@ export function Header({ favorites = [], onNavigate }) {
     // Simulate a short delay for better UX
     await new Promise(resolve => setTimeout(resolve, 800));
     logout();
-    navigate('/login?logout=success');
+    navigate('/?logout=success');
   };
 
   const handleCancelLogout = () => {
@@ -36,7 +37,7 @@ export function Header({ favorites = [], onNavigate }) {
       <header className="main-header">
         <div className="container header-content">
           <div className="header-logo">
-            <span role="img" aria-label="home">🏠</span>
+            <div className="nav-logo-icon"><HomeIcon size={24} /></div>
             <span>BoardingHouseFinder</span>
           </div>
           {/* Maybe add a Login button here if needed */}
@@ -49,11 +50,11 @@ export function Header({ favorites = [], onNavigate }) {
   return (
     <header className="main-header">
       <div className="container header-content">
-        <div 
-          className="header-logo" 
+        <div
+          className="header-logo"
           onClick={() => onNavigate('home')}
         >
-          <span role="img" aria-label="home">🏠</span>
+          <div className="nav-logo-icon"><HomeIcon size={24} /></div>
           <span>BoardingHouseFinder</span>
         </div>
 

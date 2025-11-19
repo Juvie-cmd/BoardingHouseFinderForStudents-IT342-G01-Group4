@@ -1,4 +1,5 @@
 import React from 'react';
+import { WarningIcon } from './Icons';
 import './styles/ErrorBoundary.css';
 
 export class ErrorBoundary extends React.Component {
@@ -8,12 +9,11 @@ export class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI
+    console.error('ErrorBoundary caught error:', error);
     return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log the error to console or send to an error reporting service
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({
       error: error,
@@ -23,17 +23,15 @@ export class ErrorBoundary extends React.Component {
 
   handleReset = () => {
     this.setState({ hasError: false, error: null, errorInfo: null });
-    // Optionally reload the page or navigate to home
     window.location.href = '/';
   };
 
   render() {
     if (this.state.hasError) {
-      // Custom fallback UI
       return (
         <div className="error-boundary-container">
           <div className="error-boundary-card">
-            <div className="error-icon">⚠️</div>
+            <div className="error-icon"><WarningIcon size={48} color="#f59e0b" /></div>
             <h1>Oops! Something went wrong</h1>
             <p className="error-message">
               We're sorry for the inconvenience. An unexpected error has occurred.

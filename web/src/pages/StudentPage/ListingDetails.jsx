@@ -4,6 +4,8 @@ import { useState } from 'react';
 // Corrected import paths (two levels up)
 import { listings } from '../../data/listings';
 import { ImageWithFallback } from '../../components/Shared/ImageWithFallback';
+import { Map } from '../../components/Shared/Map';
+import { LinkIcon, StarIcon, UsersIcon, CalendarIcon, CheckIcon, LocationIcon, ArrowLeftIcon } from '../../components/Shared/Icons';
 import './styles/ListingDetails.css';
 
 
@@ -32,7 +34,7 @@ export function ListingDetails({ listingId, onBack }) {
       <div className="details-header-bar">
         <div className="container">
           <button variant="ghost" onClick={onBack} className="details-back-button">
-            <span className="icon">←</span>
+            <span className="icon"><ArrowLeftIcon size={16} /></span>
             Back to Search
           </button>
         </div>
@@ -57,7 +59,7 @@ export function ListingDetails({ listingId, onBack }) {
                     {/* <span className="icon">❤️</span> */}
                   </button>
                   <button className="button button-secondary button-icon">
-                    <span className="icon">🔗</span>
+                    <span className="icon"><LinkIcon size={16} /></span>
                   </button>
                 </div>
                 {listing.available && (
@@ -89,7 +91,7 @@ export function ListingDetails({ listingId, onBack }) {
                 <div className="details-header-info">
                   <h1>{listing.title}</h1>
                   <div className="rating">
-                    <span className="icon">⭐</span>
+                    <span className="icon"><StarIcon size={16} fill="#FFD700" color="#FFD700" /></span>
                     <span>{listing.rating}</span>
                     <span className="light-text">({listing.reviews} reviews)</span>
                   </div>
@@ -108,14 +110,14 @@ export function ListingDetails({ listingId, onBack }) {
                   <div className="details-item">
                     <div className="label">Room Type</div>
                     <div className="value">
-                      <span className="icon">👥</span>
+                      <span className="icon"><UsersIcon size={16} /></span>
                       <span>{listing.roomType}</span>
                     </div>
                   </div>
                   <div className="details-item">
                     <div className="label">Available From</div>
                     <div className="value">
-                      <span className="icon">🗓️</span>
+                      <span className="icon"><CalendarIcon size={16} /></span>
                       <span>Immediate</span>
                     </div>
                   </div>
@@ -129,7 +131,7 @@ export function ListingDetails({ listingId, onBack }) {
                 <div className="details-grid-2-col">
                   {listing.amenities.map((amenity) => (
                     <div key={amenity} className="amenity-item">
-                      <span className="icon">✔️</span>
+                      <span className="icon"><CheckIcon size={16} color="#22c55e" /></span>
                       <span>{amenity}</span>
                     </div>
                   ))}
@@ -143,8 +145,9 @@ export function ListingDetails({ listingId, onBack }) {
                 <div className="tabs-list">
                   <button onClick={() => setActiveTab('description')} className={activeTab === 'description' ? 'active' : ''}>Description</button>
                   <button onClick={() => setActiveTab('rules')} className={activeTab === 'rules' ? 'active' : ''}>House Rules</button>
+                  <button onClick={() => setActiveTab('location')} className={activeTab === 'location' ? 'active' : ''}>Location</button>
                 </div>
-                
+
                 <div className="tabs-content">
                   {activeTab === 'description' && (
                     <div className="description-content">
@@ -159,13 +162,32 @@ export function ListingDetails({ listingId, onBack }) {
                   {activeTab === 'rules' && (
                     <div className="rules-content">
                       <div className="house-rule-item">
-                        <span className="icon">✔️</span>
+                        <span className="icon"><CheckIcon size={16} color="#22c55e" /></span>
                         <span>No smoking inside the premises</span>
                       </div>
                       <div className="house-rule-item">
-                        <span className="icon">✔️</span>
+                        <span className="icon"><CheckIcon size={16} color="#22c55e" /></span>
                         <span>Guests allowed with prior notice</span>
                       </div>
+                    </div>
+                  )}
+                  {activeTab === 'location' && (
+                    <div className="location-content">
+                      <div className="location-info">
+                        <h4>Address</h4>
+                        <p>{listing.location}</p>
+                        <h4 style={{ marginTop: '1rem' }}>Nearby Schools</h4>
+                        <p>{listing.nearbySchools}</p>
+                        <p className="distance-info">
+                          <span className="icon"><LocationIcon size={16} /></span>
+                          <span>{listing.distance}</span>
+                        </p>
+                      </div>
+                      <Map
+                        coordinates={listing.coordinates}
+                        title={listing.title}
+                        location={listing.location}
+                      />
                     </div>
                   )}
                 </div>

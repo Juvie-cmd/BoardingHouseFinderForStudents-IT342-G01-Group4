@@ -3,16 +3,24 @@
 /* --- Hero Section --- */
 .hero-section {
   background-color: var(--primary-color);
-  padding: 6rem 1rem 5rem 1rem; /* Added horizontal padding */
+  /* padding: 6rem 1rem 5rem 1rem; */ /* Added horizontal padding */
+  padding: 6rem 2rem 5rem 2rem; /* Increased horizontal padding */
 }
-.hero-content { text-align: center; margin-bottom: 2.5rem; max-width: 80rem; margin: 0 auto 2.5rem auto; } /* Centered content */
+.hero-content {
+  text-align: center;
+  /* margin-bottom: 2.5rem; max-width: 80rem; margin: 0 auto 2.5rem auto; */ /* Centered content */
+  margin-bottom: 3rem;
+  max-width: 80rem;
+  margin: 0 auto 3rem auto; /* Increased bottom margin */
+}
 .hero-content h1 { color: var(--bg-white); margin-bottom: 1rem; }
 .hero-content p { color: var(--primary-text-light); font-size: 1.125rem; max-width: 48rem; margin: 0 auto; }
 .search-card { max-width: 56rem; margin: 0 auto; box-shadow: var(--shadow-lg); background-color: var(--bg-white); } /* Ensure background */
 .search-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  /* gap: 1rem; */
+  gap: 1.5rem; /* Increased gap */
 }
 .search-grid-item { flex: 1; min-width: 12rem; }
 .search-grid-item label {
@@ -37,12 +45,14 @@
 
 /* --- Why Choose Section --- */
 .why-choose-section {
-  padding: 5rem 1rem; /* Added horizontal padding */
+  /* padding: 5rem 1rem; */ /* Added horizontal padding */
+  padding: 5rem 2rem; /* Increased horizontal padding */
   background-color: var(--bg-light-gray);
 }
 .why-choose-section .grid-3-col { /* Target grid specifically */
   max-width: 80rem; /* Use container width */
-  margin: 2rem auto 0 auto; /* Added top margin */
+  /* margin: 2rem auto 0 auto; */ /* Added top margin */
+  margin: 2.5rem auto 0 auto; /* Increased top margin */
 }
 /* section-header is global */
 .feature-item {
@@ -77,11 +87,13 @@
 
 /* --- Featured Listings Section --- */
 .featured-listings-section {
-  padding: 5rem 1rem; /* Added horizontal padding */
+  /* padding: 5rem 1rem; */ /* Added horizontal padding */
+  padding: 5rem 2rem; /* Increased horizontal padding */
   background-color: var(--bg-white);
 }
 .featured-listings-section .section-header { /* Style section header if needed */
-  margin-bottom: 2rem; /* Adjust spacing */
+  /* margin-bottom: 2rem; */ /* Adjust spacing */
+  margin-bottom: 2.5rem; /* Increased spacing */
 }
 .featured-listings-section .grid-3-col { /* Ensure grid layout */
   max-width: 80rem; /* Use container width */
@@ -148,13 +160,15 @@
 .favorite-button.active { opacity: 1; color: #ef4444; }
 
 .listing-card-content {
-  padding: 1.25rem;
+  /* padding: 1.25rem; */
+  padding: 1.5rem; /* Increased padding */
   flex-grow: 1; /* Allow content to fill remaining space */
   display: flex; /* Use flexbox for content layout */
   flex-direction: column; /* Stack content vertically */
 }
 .listing-info-header {
-  margin-bottom: 0.75rem;
+  /* margin-bottom: 0.75rem; */
+  margin-bottom: 1rem; /* Increased margin */
   flex-shrink: 0;
 }
 .listing-card-content h3 {
@@ -178,9 +192,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
+  /* gap: 1rem; */
+  gap: 1.25rem; /* Increased gap */
+  /* margin-bottom: 1rem; */
+  margin-bottom: 1.25rem; /* Increased margin */
+  /* padding-bottom: 1rem; */
+  padding-bottom: 1.25rem; /* Increased padding */
   border-bottom: 1px solid var(--bg-light-gray);
   font-size: 0.875rem;
   flex-shrink: 0;
@@ -197,7 +214,8 @@
   align-items: center;
   justify-content: space-between;
   margin-top: auto; /* Push footer to the bottom */
-  padding-top: 1rem; /* Add space above footer */
+  /* padding-top: 1rem; */ /* Add space above footer */
+  padding-top: 1.25rem; /* Increased padding above footer */
   flex-shrink: 0;
 }
 .listing-price .price {
@@ -218,12 +236,14 @@
 
 /* --- How It Works Section --- */
 .how-it-works-section {
-  padding: 5rem 1rem; /* Added horizontal padding */
+  /* padding: 5rem 1rem; */ /* Added horizontal padding */
+  padding: 5rem 2rem; /* Increased horizontal padding */
   background-color: var(--bg-light-gray); /* Match Why Choose section */
 }
 .how-it-works-section .grid-3-col { /* Target grid specifically */
   max-width: 80rem; /* Use container width */
-  margin: 2rem auto 0 auto; /* Added top margin */
+  /* margin: 2rem auto 0 auto; */ /* Added top margin */
+  margin: 2.5rem auto 0 auto; /* Increased top margin */
 }
 .step-item { text-align: center; }
 .step-number {
@@ -246,7 +266,8 @@
 
 /* --- Footer --- */
 .footer {
-  padding: 4rem 1rem; /* Added horizontal padding */
+  /* padding: 4rem 1rem; */ /* Added horizontal padding */
+  padding: 4rem 2rem; /* Increased horizontal padding */
   background-color: var(--dark-text);
   color: white;
 }
@@ -257,8 +278,10 @@
 .footer-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
-  margin-bottom: 3rem;
+  /* gap: 2rem; */
+  gap: 2.5rem; /* Increased gap */
+  /* margin-bottom: 3rem; */
+  margin-bottom: 3.5rem; /* Increased margin */
 }
 @media (min-width: 768px) {
   .footer-grid { grid-template-columns: repeat(4, 1fr); }
