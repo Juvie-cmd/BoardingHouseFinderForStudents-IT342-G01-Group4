@@ -1,6 +1,7 @@
 import { useAuth } from '../../context/AuthContext';
 import { Profile, StatsCard } from '../../components/Profile';
 import { FormInput, FormTextarea, Badge } from '../../components/UI';
+import { HomeIcon, UsersIcon, MoneyIcon, StarIcon } from '../../components/Shared/Icons';
 import './styles/Profile.css';
 
 export function LandlordProfile() {
@@ -27,10 +28,10 @@ export function LandlordProfile() {
   };
 
   const statsData = [
-    { icon: '🏠', label: 'Properties', value: stats.totalProperties, variant: 'green' },
-    { icon: '👥', label: 'Total Tenants', value: stats.totalTenants, variant: 'blue' },
-    { icon: '💰', label: 'Monthly Revenue', value: `₱${stats.monthlyRevenue.toLocaleString()}`, variant: 'purple' },
-    { icon: '⭐', label: 'Average Rating', value: stats.rating, variant: 'yellow' }
+    { icon: <HomeIcon size={20} />, label: 'Properties', value: stats.totalProperties, variant: 'green' },
+    { icon: <UsersIcon size={20} />, label: 'Total Tenants', value: stats.totalTenants, variant: 'blue' },
+    { icon: <MoneyIcon size={20} />, label: 'Monthly Revenue', value: `₱${stats.monthlyRevenue.toLocaleString()}`, variant: 'purple' },
+    { icon: <StarIcon size={20} fill="#FFD700" color="#FFD700" />, label: 'Average Rating', value: stats.rating, variant: 'yellow' }
   ];
 
   const settingsItems = [

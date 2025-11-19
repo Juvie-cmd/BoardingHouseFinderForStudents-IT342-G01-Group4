@@ -1,4 +1,5 @@
 import React from 'react';
+import { WarningIcon } from './Icons';
 import './styles/ErrorBoundary.css';
 
 export class ErrorBoundary extends React.Component {
@@ -33,7 +34,7 @@ export class ErrorBoundary extends React.Component {
       return (
         <div className="error-boundary-container">
           <div className="error-boundary-card">
-            <div className="error-icon">⚠️</div>
+            <div className="error-icon"><WarningIcon size={48} color="#f59e0b" /></div>
             <h1>Oops! Something went wrong</h1>
             <p className="error-message">
               We're sorry for the inconvenience. An unexpected error has occurred.
