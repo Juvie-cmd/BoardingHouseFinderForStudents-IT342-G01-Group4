@@ -5,7 +5,7 @@ import { UsersIcon, HomeIcon, WarningIcon, CheckIcon } from '../../components/Sh
 import './styles/Profile.css';
 
 export function AdminProfile() {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
 
   const initialFormData = {
     name: user?.name || '',
@@ -165,6 +165,8 @@ export function AdminProfile() {
       sidebar={sidebar}
       variant="admin"
       layoutVariant="admin"
+      additionalInfo={additionalInfo}
+      onSubmit={updateProfile} // ✅ Backend integration
     />
   );
 }

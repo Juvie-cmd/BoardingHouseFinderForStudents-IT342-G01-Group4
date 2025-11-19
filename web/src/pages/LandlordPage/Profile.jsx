@@ -5,7 +5,7 @@ import { HomeIcon, UsersIcon, MoneyIcon, StarIcon } from '../../components/Share
 import './styles/Profile.css';
 
 export function LandlordProfile() {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
 
   const initialFormData = {
     name: user?.name || '',
@@ -179,6 +179,7 @@ export function LandlordProfile() {
       settingsItems={settingsItems}
       sidebar={sidebar}
       variant="landlord"
+      onSubmit={updateProfile} // ✅ Backend integration
     />
   );
 }

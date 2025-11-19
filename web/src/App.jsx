@@ -1,7 +1,7 @@
 // src/App.jsx
 
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AppRoutes } from './routes';
 import { Header } from "./components/Shared/Header";
@@ -12,6 +12,7 @@ import "./App.css";
 function AppContent() {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleNavigate = (destination) => {
     if (destination === 'home') {
@@ -31,10 +32,22 @@ function AppContent() {
     }
   };
 
+  // Auto-redirect on login
+  useEffect(() => {
+    if (isAuthenticated && user && location.pathname === '/') {
+      if (user.role === 'student') {
+        navigate('/search', { replace: true });
+      } else if (user.role === 'landlord') {
+        navigate('/landlord/dashboard', { replace: true });
+      } else if (user.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate, location.pathname]);
+
   return (
     <>
       {isAuthenticated && <Header onNavigate={handleNavigate} />}
-
       <AppRoutes />
     </>
   );
@@ -49,5 +62,3 @@ export default function App() {
     </ErrorBoundary>
   );
 }
-
-
