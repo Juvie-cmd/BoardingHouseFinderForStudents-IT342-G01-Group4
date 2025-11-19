@@ -1,6 +1,7 @@
 import { useAuth } from '../../context/AuthContext';
 import { Profile, StatsCard, ActivityCard } from '../../components/Profile';
 import { FormInput, FormSelect, FormTextarea } from '../../components/UI';
+import { UsersIcon, HomeIcon, WarningIcon, CheckIcon } from '../../components/Shared/Icons';
 import './styles/Profile.css';
 
 export function AdminProfile() {
@@ -30,10 +31,10 @@ export function AdminProfile() {
   ];
 
   const statsData = [
-    { icon: '👥', label: 'Total Users', value: adminStats.totalUsers.toLocaleString(), variant: 'blue' },
-    { icon: '🏠', label: 'Total Listings', value: adminStats.totalListings, variant: 'green' },
-    { icon: '⚠️', label: 'Active Reports', value: adminStats.activeReports, variant: 'red' },
-    { icon: '✅', label: 'Resolved', value: adminStats.resolvedReports, variant: 'purple' }
+    { icon: <UsersIcon size={20} />, label: 'Total Users', value: adminStats.totalUsers.toLocaleString(), variant: 'blue' },
+    { icon: <HomeIcon size={20} />, label: 'Total Listings', value: adminStats.totalListings, variant: 'green' },
+    { icon: <WarningIcon size={20} />, label: 'Active Reports', value: adminStats.activeReports, variant: 'red' },
+    { icon: <CheckIcon size={20} />, label: 'Resolved', value: adminStats.resolvedReports, variant: 'purple' }
   ];
 
   const departmentOptions = [

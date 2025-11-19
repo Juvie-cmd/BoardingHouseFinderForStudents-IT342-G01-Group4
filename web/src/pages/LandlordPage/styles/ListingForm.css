@@ -1,7 +1,7 @@
 /* src/pages/LandlordPage/styles/ListingFormPage.css */
 
 .listing-form-page {
-  padding-top: 4rem; /* Adjust if header height changes */
+  /* padding-top: 4rem; */ /* Adjust if header height changes */
   background-color: var(--bg-light-gray);
 }
 

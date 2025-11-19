@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Card, FormInput, Alert } from '../../components/UI';
+import { HomeIcon } from '../../components/Shared/Icons';
 import './styles/LoginPage.css';
 import { FcGoogle } from "react-icons/fc";
 
-export function LoginPage() {
+export function LoginPage(){
   const { login, register, isLoading, handleGoogleCallback } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -138,9 +139,9 @@ useEffect(() => {
   return (
     <div className="login-page-container">
       <div className="login-wrapper">
-        <div className="login-header">
+        <div className="login-header" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
           <div className="login-logo">
-            <span role="img" aria-label="home">🏠</span>
+            <div className="nav-logo-icon"><HomeIcon size={24} /></div>
           </div>
           <span className="login-title">BoardingHouseFinder</span>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeftIcon, CloudIcon, CloseIcon } from '../../components/Shared/Icons';
 import './styles/ListingForm.css';
 
 const toast = {
@@ -100,7 +101,7 @@ export function ListingForm({ listingId, onBack }) {
       <div className="listing-form-header-bar">
         <div className="container listing-form-header-content">
           <button className="button button-link back-button" onClick={onBack}>
-            <span className="icon">←</span> Back to Dashboard
+            <span className="icon"><ArrowLeftIcon size={16} /></span> Back to Dashboard
           </button>
         </div>
       </div>
@@ -209,7 +210,7 @@ export function ListingForm({ listingId, onBack }) {
               <div className="card-header"><h3>Photos</h3><p className="text-muted small-text">Upload photos (max 10)</p></div>
               <div className="card-content">
                  <div className="photo-upload-area">
-                    <span className="icon upload-icon">☁️</span>
+                    <span className="icon upload-icon"><CloudIcon size={48} /></span>
                     <p>Drag and drop photos here or click to browse</p>
                     <input type="file" id="imageUpload" multiple accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
                     <label htmlFor="imageUpload" className="button button-secondary">Select Photos</label>
@@ -219,7 +220,7 @@ export function ListingForm({ listingId, onBack }) {
                      {uploadedImages.map((imgUrl, idx) => (
                        <div key={idx} className="image-preview-item">
                          <img src={imgUrl} alt={`Upload preview ${idx + 1}`} />
-                         <button type="button" className="remove-image-button" onClick={() => removeImage(idx)}>✕</button>
+                         <button type="button" className="remove-image-button" onClick={() => removeImage(idx)}><CloseIcon size={16} /></button>
                        </div>
                      ))}
                    </div>
