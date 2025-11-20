@@ -1,25 +1,54 @@
-import { listings } from '../../data/listings';
+// src/pages/LandlordPage/LandlordDashboard.jsx
+import { useState, useEffect } from 'react';
+import API from '../../api/api';
 import { ImageWithFallback } from '../../components/Shared/ImageWithFallback';
 import { Dashboard, StatCard, PerformanceList, DataTable } from '../../components/Dashboard';
 import { HomeIcon, UsersIcon, MoneyIcon, StarIcon, EyeIcon, MessageIcon, ChartIcon, EditIcon, LocationIcon, PlusIcon, BarChartIcon } from '../../components/Shared/Icons';
 import './styles/LandlordDashboard.css';
 
 export function LandlordDashboard({ onCreateListing, onEditListing }) {
-  const myListings = listings.slice(0, 3);
+  const [myListings, setMyListings] = useState([]);
+  const [recentInquiries, setRecentInquiries] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Stats placeholder — will compute from data
   const stats = {
-    totalListings: 3,
-    activeListings: 2,
-    totalInquiries: 24,
-    monthlyRevenue: 1350,
-    viewsThisMonth: 342,
-    averageRating: 4.7,
+    totalListings: myListings.length,
+    activeListings: myListings.filter(l => l.available).length,
+    totalInquiries: recentInquiries.length,
+    monthlyRevenue: myListings.reduce((sum, l) => sum + (l.price || 0), 0) || 0,
+    viewsThisMonth: 0,
+    averageRating: myListings.length ? (myListings.reduce((s, l) => s + (l.rating || 0), 0) / myListings.length).toFixed(1) : 0,
   };
-  const recentInquiries = [
-    { id: 1, student: 'John Doe', listing: 'Cozy Student Room', date: '2 hours ago', status: 'New', message: 'Hi, is this still available?' },
-    { id: 2, student: 'Jane Smith', listing: 'Campus View Residence', date: '5 hours ago', status: 'Replied', message: 'Can I schedule a viewing?' },
-    { id: 3, student: 'Mike Johnson', listing: 'Cozy Student Room', date: '1 day ago', status: 'Scheduled', message: 'Looking forward to the viewing!' },
-    { id: 4, student: 'Sarah Williams', listing: 'Campus View Residence', date: '2 days ago', status: 'Replied', message: 'Is WiFi included?' },
-  ];
+
+  const landlordId = localStorage.getItem('userId');
+
+  useEffect(() => {
+    if (!landlordId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    Promise.all([
+      API.get("/landlord/listings"),
+      API.get(`/landlord/inquiries?landlordId=${landlordId}`).catch(() => ({ data: [] }))
+    ])
+      .then(([listRes, inqRes]) => {
+        // ensure amenities are arrays
+        const normalized = (listRes.data || []).map(l => {
+          if (typeof l.amenities === 'string') {
+            l.amenities = l.amenities ? l.amenities.split(',').map(s => s.trim()) : [];
+          }
+          return l;
+        });
+        setMyListings(normalized);
+        setRecentInquiries(inqRes.data || []);
+      })
+      .catch(err => {
+        console.error('Failed to load landlord data', err);
+      })
+      .finally(() => setLoading(false));
+  }, [landlordId]);
 
   const getInquiryStatusClass = (status) => {
     if (status === 'New') return 'badge-primary';
@@ -28,7 +57,6 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
     return 'badge-secondary';
   };
 
-  // Tab configuration
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'listings', label: 'My Listings' },
@@ -36,7 +64,6 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
     { id: 'analytics', label: 'Analytics' },
   ];
 
-  // Performance items for Overview
   const performanceItems = [
     { icon: <EyeIcon size={20} />, label: 'Total Views', value: stats.viewsThisMonth, iconColor: 'blue' },
     { icon: <MessageIcon size={20} />, label: 'Inquiries', value: stats.totalInquiries, iconColor: 'purple' },
@@ -44,11 +71,10 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
     { icon: <StarIcon size={20} fill="#FFD700" color="#FFD700" />, label: 'Avg Rating', value: stats.averageRating, iconColor: 'yellow' },
   ];
 
-  // Inquiries table columns configuration
   const inquiryColumns = [
-    { header: 'Student', field: 'student' },
-    { header: 'Listing', field: 'listing' },
-    { header: 'Date', field: 'date' },
+    { header: 'Student', field: 'student', render: (i) => i.student?.name || 'Student' },
+    { header: 'Listing', field: 'listing', render: (i) => i.listing?.title || 'Listing' },
+    { header: 'Date', field: 'date', render: (i) => i.dateSent || i.date || '-' },
     {
       header: 'Status',
       field: 'status',
@@ -68,7 +94,6 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
     }
   ];
 
-  // Header Actions
   const headerActions = (
     <button
       className="button button-primary button-large"
@@ -78,38 +103,21 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
     </button>
   );
 
-  // Render tab content
   const renderTabContent = (selectedTab) => {
+    if (loading) {
+      return <div style={{ padding: '2rem' }}>Loading...</div>;
+    }
+
     switch (selectedTab) {
       case 'overview':
         return (
           <div className="overview-content">
-            {/* Stats Grid */}
             <div className="stats-grid">
-              <StatCard
-                title="Total Listings"
-                value={stats.totalListings}
-                icon={<HomeIcon size={24} />}
-                iconColor="blue"
-                description={`${stats.activeListings} active`}
-              />
-              <StatCard
-                title="Total Inquiries"
-                value={stats.totalInquiries}
-                icon={<MessageIcon size={24} />}
-                iconColor="purple"
-                description={`${recentInquiries.filter(i => i.status === 'New').length} new`}
-              />
-              <StatCard
-                title="Average Rating"
-                value={stats.averageRating}
-                icon={<StarIcon size={24} fill="#FFD700" color="#FFD700" />}
-                iconColor="yellow"
-                description={`${myListings.reduce((sum, l) => sum + (l.reviews || 0), 0)} reviews`}
-              />
+              <StatCard title="Total Listings" value={stats.totalListings} icon={<HomeIcon size={24} />} iconColor="blue" description={`${stats.activeListings} active`} />
+              <StatCard title="Total Inquiries" value={stats.totalInquiries} icon={<MessageIcon size={24} />} iconColor="purple" description={`${recentInquiries.filter(i => i.status === 'New').length} new`} />
+              <StatCard title="Average Rating" value={stats.averageRating} icon={<StarIcon size={24} fill="#FFD700" color="#FFD700" />} iconColor="yellow" description={`${myListings.reduce((sum, l) => sum + (l.reviews || 0), 0)} reviews`} />
             </div>
 
-            {/* Recent Activity */}
             <div className="recent-activity-grid">
               <div className="card">
                 <div className="card-header">
@@ -122,23 +130,20 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                       <div key={inquiry.id} className="inquiry-item">
                         <div className="inquiry-item-header">
                           <div className="inquiry-item-info">
-                            <p className="inquiry-student">{inquiry.student}</p>
-                            <p className="inquiry-listing">{inquiry.listing}</p>
+                            <p className="inquiry-student">{inquiry.student?.name || 'Student'}</p>
+                            <p className="inquiry-listing">{inquiry.listing?.title || 'Listing'}</p>
                           </div>
-                          <span className={`badge ${getInquiryStatusClass(inquiry.status)}`}>
-                            {inquiry.status}
-                          </span>
+                          <span className={`badge ${getInquiryStatusClass(inquiry.status)}`}>{inquiry.status}</span>
                         </div>
                         <p className="inquiry-message">{inquiry.message}</p>
-                        <p className="inquiry-date">{inquiry.date}</p>
+                        <p className="inquiry-date">{inquiry.dateSent || inquiry.date}</p>
                       </div>
                     ))}
                   </div>
-                  <button className="button button-secondary button-full-width inquiry-view-all">
-                    View All Messages
-                  </button>
+                  <button className="button button-secondary button-full-width inquiry-view-all">View All Messages</button>
                 </div>
               </div>
+
               <div className="card">
                 <div className="card-header">
                   <h3>Performance Overview</h3>
@@ -176,7 +181,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                     <div className="listing-item-stats">
                       <div>
                         <p className="stat-label">Price</p>
-                        <p className="stat-value-main">${listing.price}/mo</p>
+                        <p className="stat-value-main">₱{listing.price}/mo</p>
                       </div>
                       <div>
                         <p className="stat-label">Room Type</p>
@@ -206,6 +211,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                 </div>
               </div>
             ))}
+
             <div className="add-listing-button-container">
               <button className="button button-primary" onClick={onCreateListing}>
                 <span className="icon"><PlusIcon size={20} /></span> Add New Property
@@ -222,11 +228,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
               <p className="text-muted small-text">Manage messages</p>
             </div>
             <div className="card-content">
-              <DataTable
-                columns={inquiryColumns}
-                data={recentInquiries}
-                className="inquiries-table"
-              />
+              <DataTable columns={inquiryColumns} data={recentInquiries} className="inquiries-table" />
             </div>
           </div>
         );
@@ -262,10 +264,11 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                 </div>
                 <div className="card-content">
                   <div className="stat-value-main">67%</div>
-                  <p className="stat-label">2 of 3 occupied</p>
+                  <p className="stat-label">2 of {myListings.length} occupied</p>
                 </div>
               </div>
             </div>
+
             <div className="card listing-performance-card">
               <div className="card-header">
                 <h3>Performance by Listing</h3>
@@ -298,6 +301,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                 </div>
               </div>
             </div>
+
           </div>
         );
 
