@@ -1,5 +1,6 @@
 package com.boardinghouse.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,6 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Listing {
 
     @Id
@@ -17,6 +19,9 @@ public class Listing {
 
     // BASIC INFO
     private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String description; // <-- ensure this exists to match ListingRequest
 
     @Column(columnDefinition = "TEXT")
     private String image;
@@ -52,5 +57,6 @@ public class Listing {
     // Landlord user
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "landlord_id")
+    @JsonIgnoreProperties({"password", "listings", "hibernateLazyInitializer", "handler"})
     private User landlord;
 }

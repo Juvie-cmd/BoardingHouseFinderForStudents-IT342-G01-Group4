@@ -1,5 +1,7 @@
 package com.boardinghouse.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -19,6 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User implements UserDetails {
 
     @Id
@@ -35,10 +38,6 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
-    /**
-     * PASSWORD CAN BE NULL FOR GOOGLE USERS
-     * Remove @NotBlank to avoid Hibernate validation errors.
-     */
     @Column(nullable = true)
     private String password;
 
@@ -46,23 +45,16 @@ public class User implements UserDetails {
     @Column(nullable = false, length = 20)
     private String role;
 
-    /**
-     * Authentication provider:
-     *  - LOCAL  = email/password
-     *  - GOOGLE = Google OAuth2 login
-     */
     @Builder.Default
     @Column(length = 20, nullable = false)
     private String authProvider = "LOCAL";
 
-    // COMMON FIELDS
     @Column(length = 20)
     private String phone;
 
     @Column(columnDefinition = "TEXT")
     private String bio;
 
-    // STUDENT FIELDS
     @Column(length = 100)
     private String university;
 
@@ -77,7 +69,6 @@ public class User implements UserDetails {
     @Column(length = 20)
     private String roomType;
 
-    // LANDLORD FIELDS
     @Column(length = 100)
     private String businessName;
 
@@ -95,14 +86,12 @@ public class User implements UserDetails {
 
     private Integer experience;
 
-    // ADMIN FIELDS
     @Column(length = 50)
     private String department;
 
     @Column(length = 50)
     private String employeeId;
 
-    // AUDIT FIELDS
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -113,14 +102,21 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Boolean active = true;
 
+    /**
+     * Prevent recursion / proxy serialization by ignoring the back-reference list.
+     * This avoids Listing -> User -> Listings -> User infinite loop.
+     */
+    @OneToMany(mappedBy = "landlord", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Listing> listings;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
 
-        // 🔹 Ensure password is never null to prevent DB errors
         if (password == null && "LOCAL".equals(authProvider)) {
-            password = ""; // or generate random if needed
+            password = "";
         }
     }
 
@@ -129,7 +125,7 @@ public class User implements UserDetails {
         updatedAt = LocalDateTime.now();
     }
 
-    // SPRING SECURITY UserDetails IMPLEMENTATION
+    // Spring Security UserDetails
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
@@ -137,16 +133,12 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() { return email; }
-
     @Override
     public boolean isAccountNonExpired() { return true; }
-
     @Override
     public boolean isAccountNonLocked() { return true; }
-
     @Override
     public boolean isCredentialsNonExpired() { return true; }
-
     @Override
     public boolean isEnabled() { return active; }
 }
