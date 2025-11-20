@@ -35,4 +35,7 @@ public class ListingRequest {
 
     private Double rating = 0.0;
     private Integer reviews = 0;
+
+    // Add available field
+    private Boolean available = true;
 }

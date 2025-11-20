@@ -10,6 +10,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
   const [myListings, setMyListings] = useState([]);
   const [recentInquiries, setRecentInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Stats placeholder — will compute from data
   const stats = {
@@ -21,19 +22,17 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
     averageRating: myListings.length ? (myListings.reduce((s, l) => s + (l.rating || 0), 0) / myListings.length).toFixed(1) : 0,
   };
 
-  const landlordId = localStorage.getItem('userId');
-
   useEffect(() => {
-    if (!landlordId) {
-      setLoading(false);
-      return;
-    }
+    console.log("Fetching landlord listings...");
     setLoading(true);
+    
     Promise.all([
       API.get("/landlord/listings"),
-      API.get(`/landlord/inquiries?landlordId=${landlordId}`).catch(() => ({ data: [] }))
+      API.get("/landlord/inquiries").catch(() => ({ data: [] }))
     ])
       .then(([listRes, inqRes]) => {
+        console.log("Listings response:", listRes.data);
+        
         // ensure amenities are arrays
         const normalized = (listRes.data || []).map(l => {
           if (typeof l.amenities === 'string') {
@@ -41,14 +40,19 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
           }
           return l;
         });
+        
+        console.log("Normalized listings:", normalized);
         setMyListings(normalized);
         setRecentInquiries(inqRes.data || []);
+        setError(null);
       })
       .catch(err => {
-        console.error('Failed to load landlord data', err);
+        console.error('Failed to load landlord data:', err);
+        console.error('Error response:', err.response?.data);
+        setError(err.response?.data?.message || 'Failed to load listings');
       })
       .finally(() => setLoading(false));
-  }, [landlordId]);
+  }, []);
 
   const getInquiryStatusClass = (status) => {
     if (status === 'New') return 'badge-primary';
@@ -105,7 +109,22 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
 
   const renderTabContent = (selectedTab) => {
     if (loading) {
-      return <div style={{ padding: '2rem' }}>Loading...</div>;
+      return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>;
+    }
+
+    if (error) {
+      return (
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <div className="alert alert-error">{error}</div>
+          <button 
+            className="button button-primary" 
+            onClick={() => window.location.reload()}
+            style={{ marginTop: '1rem' }}
+          >
+            Retry
+          </button>
+        </div>
+      );
     }
 
     switch (selectedTab) {
@@ -125,21 +144,25 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                   <p className="text-muted small-text">Latest messages</p>
                 </div>
                 <div className="card-content">
-                  <div className="inquiries-list">
-                    {recentInquiries.map((inquiry) => (
-                      <div key={inquiry.id} className="inquiry-item">
-                        <div className="inquiry-item-header">
-                          <div className="inquiry-item-info">
-                            <p className="inquiry-student">{inquiry.student?.name || 'Student'}</p>
-                            <p className="inquiry-listing">{inquiry.listing?.title || 'Listing'}</p>
+                  {recentInquiries.length > 0 ? (
+                    <div className="inquiries-list">
+                      {recentInquiries.map((inquiry) => (
+                        <div key={inquiry.id} className="inquiry-item">
+                          <div className="inquiry-item-header">
+                            <div className="inquiry-item-info">
+                              <p className="inquiry-student">{inquiry.student?.name || 'Student'}</p>
+                              <p className="inquiry-listing">{inquiry.listing?.title || 'Listing'}</p>
+                            </div>
+                            <span className={`badge ${getInquiryStatusClass(inquiry.status)}`}>{inquiry.status}</span>
                           </div>
-                          <span className={`badge ${getInquiryStatusClass(inquiry.status)}`}>{inquiry.status}</span>
+                          <p className="inquiry-message">{inquiry.message}</p>
+                          <p className="inquiry-date">{inquiry.dateSent || inquiry.date}</p>
                         </div>
-                        <p className="inquiry-message">{inquiry.message}</p>
-                        <p className="inquiry-date">{inquiry.dateSent || inquiry.date}</p>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted">No inquiries yet</p>
+                  )}
                   <button className="button button-secondary button-full-width inquiry-view-all">View All Messages</button>
                 </div>
               </div>
@@ -160,63 +183,81 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
       case 'listings':
         return (
           <div className="my-listings-content">
-            {myListings.map((listing) => (
-              <div key={listing.id} className="card listing-item-card">
-                <div className="card-content listing-item-content">
-                  <div className="listing-item-image-wrapper">
-                    <ImageWithFallback src={listing.image} alt={listing.title} className="listing-item-image" />
-                  </div>
-                  <div className="listing-item-details">
-                    <div className="listing-item-header">
-                      <div>
-                        <h3>{listing.title}</h3>
-                        <div className="listing-item-location">
-                          <span className="icon"><LocationIcon size={16} /></span> {listing.location}
+            {myListings.length > 0 ? (
+              <>
+                {myListings.map((listing) => (
+                  <div key={listing.id} className="card listing-item-card">
+                    <div className="card-content listing-item-content">
+                      <div className="listing-item-image-wrapper">
+                        <ImageWithFallback src={listing.image} alt={listing.title} className="listing-item-image" />
+                      </div>
+                      <div className="listing-item-details">
+                        <div className="listing-item-header">
+                          <div>
+                            <h3>{listing.title}</h3>
+                            <div className="listing-item-location">
+                              <span className="icon"><LocationIcon size={16} /></span> {listing.location}
+                            </div>
+                          </div>
+                          <span className={`badge ${listing.available ? 'badge-success' : 'badge-secondary'}`}>
+                            {listing.available ? 'Available' : 'Occupied'}
+                          </span>
+                        </div>
+                        <div className="listing-item-stats">
+                          <div>
+                            <p className="stat-label">Price</p>
+                            <p className="stat-value-main">₱{listing.price}/mo</p>
+                          </div>
+                          <div>
+                            <p className="stat-label">Room Type</p>
+                            <p className="stat-value">{listing.roomType}</p>
+                          </div>
+                          <div>
+                            <p className="stat-label">Rating</p>
+                            <p className="stat-value"><span className="icon"><StarIcon size={14} fill="#FFD700" color="#FFD700" /></span>{listing.rating}</p>
+                          </div>
+                          <div>
+                            <p className="stat-label">Reviews</p>
+                            <p className="stat-value">{listing.reviews}</p>
+                          </div>
+                        </div>
+                        <div className="listing-item-actions">
+                          <button className="button button-secondary button-small" onClick={() => onEditListing(listing.id)}>
+                            <span className="icon"><EditIcon size={16} /></span> Edit
+                          </button>
+                          <button className="button button-secondary button-small">
+                            <span className="icon"><EyeIcon size={16} /></span> View
+                          </button>
+                          <button className="button button-secondary button-small">
+                            <span className="icon"><MessageIcon size={16} /></span> Messages
+                          </button>
                         </div>
                       </div>
-                      <span className={`badge ${listing.available ? 'badge-success' : 'badge-secondary'}`}>
-                        {listing.available ? 'Available' : 'Occupied'}
-                      </span>
-                    </div>
-                    <div className="listing-item-stats">
-                      <div>
-                        <p className="stat-label">Price</p>
-                        <p className="stat-value-main">₱{listing.price}/mo</p>
-                      </div>
-                      <div>
-                        <p className="stat-label">Room Type</p>
-                        <p className="stat-value">{listing.roomType}</p>
-                      </div>
-                      <div>
-                        <p className="stat-label">Rating</p>
-                        <p className="stat-value"><span className="icon"><StarIcon size={14} fill="#FFD700" color="#FFD700" /></span>{listing.rating}</p>
-                      </div>
-                      <div>
-                        <p className="stat-label">Reviews</p>
-                        <p className="stat-value">{listing.reviews}</p>
-                      </div>
-                    </div>
-                    <div className="listing-item-actions">
-                      <button className="button button-secondary button-small" onClick={() => onEditListing(listing.id)}>
-                        <span className="icon"><EditIcon size={16} /></span> Edit
-                      </button>
-                      <button className="button button-secondary button-small">
-                        <span className="icon"><EyeIcon size={16} /></span> View
-                      </button>
-                      <button className="button button-secondary button-small">
-                        <span className="icon"><MessageIcon size={16} /></span> Messages
-                      </button>
                     </div>
                   </div>
-                </div>
+                ))}
+              </>
+            ) : (
+              <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
+                <h3>No listings yet</h3>
+                <p className="text-muted">Create your first listing to get started</p>
+                <button 
+                  className="button button-primary" 
+                  onClick={onCreateListing}
+                  style={{ marginTop: '1rem' }}
+                >
+                  Create Listing
+                </button>
               </div>
-            ))}
+            )}
 
-            <div className="add-listing-button-container">
-              <button className="button button-primary" onClick={onCreateListing}>
-                <span className="icon"><PlusIcon size={20} /></span> Add New Property
-              </button>
-            </div>
+            {myListings.length > 0 && (
+              <div className="add-listing-button-container">
+                <button className="button button-primary" onClick={onCreateListing}>
+                  <span className="icon"><PlusIcon size={20} /></span> Add New Property
+                </button>
+              </div>
+            )}
           </div>
         );
 
@@ -228,7 +269,11 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
               <p className="text-muted small-text">Manage messages</p>
             </div>
             <div className="card-content">
-              <DataTable columns={inquiryColumns} data={recentInquiries} className="inquiries-table" />
+              {recentInquiries.length > 0 ? (
+                <DataTable columns={inquiryColumns} data={recentInquiries} className="inquiries-table" />
+              ) : (
+                <p className="text-muted">No inquiries yet</p>
+              )}
             </div>
           </div>
         );
@@ -263,45 +308,50 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                   <span className="icon text-muted"><HomeIcon size={18} /></span>
                 </div>
                 <div className="card-content">
-                  <div className="stat-value-main">67%</div>
-                  <p className="stat-label">2 of {myListings.length} occupied</p>
+                  <div className="stat-value-main">
+                    {myListings.length > 0 
+                      ? Math.round((stats.activeListings / myListings.length) * 100) 
+                      : 0}%
+                  </div>
+                  <p className="stat-label">{stats.activeListings} of {myListings.length} available</p>
                 </div>
               </div>
             </div>
 
-            <div className="card listing-performance-card">
-              <div className="card-header">
-                <h3>Performance by Listing</h3>
-                <p className="text-muted small-text">Views & inquiries</p>
-              </div>
-              <div className="card-content">
-                <div className="listing-performance-list">
-                  {myListings.map((listing) => (
-                    <div key={listing.id} className="listing-performance-item">
-                      <div className="performance-item-header">
-                        <span>{listing.title}</span>
-                        <span className="badge badge-warning"><StarIcon size={14} fill="#FFD700" color="#FFD700" /> {listing.rating}</span>
+            {myListings.length > 0 && (
+              <div className="card listing-performance-card">
+                <div className="card-header">
+                  <h3>Performance by Listing</h3>
+                  <p className="text-muted small-text">Views & inquiries</p>
+                </div>
+                <div className="card-content">
+                  <div className="listing-performance-list">
+                    {myListings.map((listing) => (
+                      <div key={listing.id} className="listing-performance-item">
+                        <div className="performance-item-header">
+                          <span>{listing.title}</span>
+                          <span className="badge badge-warning"><StarIcon size={14} fill="#FFD700" color="#FFD700" /> {listing.rating}</span>
+                        </div>
+                        <div className="performance-item-stats">
+                          <div>
+                            <p className="stat-label">Views</p>
+                            <p className="stat-value">142</p>
+                          </div>
+                          <div>
+                            <p className="stat-label">Inquiries</p>
+                            <p className="stat-value">8</p>
+                          </div>
+                          <div>
+                            <p className="stat-label">Conversion</p>
+                            <p className="stat-value">5.6%</p>
+                          </div>
+                        </div>
                       </div>
-                      <div className="performance-item-stats">
-                        <div>
-                          <p className="stat-label">Views</p>
-                          <p className="stat-value">142</p>
-                        </div>
-                        <div>
-                          <p className="stat-label">Inquiries</p>
-                          <p className="stat-value">8</p>
-                        </div>
-                        <div>
-                          <p className="stat-label">Conversion</p>
-                          <p className="stat-value">5.6%</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-
+            )}
           </div>
         );
 

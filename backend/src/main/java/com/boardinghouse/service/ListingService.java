@@ -1,13 +1,16 @@
 package com.boardinghouse.service;
 
+import com.boardinghouse.dto.ListingRequest;
+import com.boardinghouse.dto.ListingResponse;
 import com.boardinghouse.entity.Listing;
 import com.boardinghouse.entity.User;
-import com.boardinghouse.dto.ListingRequest;
 import com.boardinghouse.repository.ListingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,41 +33,47 @@ public class ListingService {
     }
 
     public Listing create(ListingRequest req, User landlord) {
+        System.out.println("Creating listing for landlord ID: " + landlord.getId());
+
         Listing listing = Listing.builder()
                 .title(req.getTitle())
+                .description(req.getDescription())
                 .image(req.getImage())
                 .location(req.getLocation())
                 .nearbySchools(req.getNearbySchools())
                 .distance(req.getDistance())
                 .roomType(req.getRoomType())
-                .rating(req.getRating())
-                .reviews(req.getReviews())
+                .rating(req.getRating() != null ? req.getRating() : 0.0)
+                .reviews(req.getReviews() != null ? req.getReviews() : 0)
                 .price(req.getPrice())
-                .available(true)
-                .amenities(String.join(",", req.getAmenities()))
+                .available(req.getAvailable() != null ? req.getAvailable() : true)
+                .amenities(req.getAmenities() != null ? String.join(",", req.getAmenities()) : "")
                 .website(req.getWebsite())
                 .latitude(req.getLatitude())
                 .longitude(req.getLongitude())
                 .landlord(landlord)
                 .build();
 
-        return listingRepository.save(listing);
+        Listing saved = listingRepository.save(listing);
+        System.out.println("Listing saved with ID: " + saved.getId());
+        return saved;
     }
 
     public Listing update(Long id, ListingRequest req) {
         Listing existing = getById(id);
 
         existing.setTitle(req.getTitle());
+        existing.setDescription(req.getDescription());
         existing.setImage(req.getImage());
         existing.setLocation(req.getLocation());
         existing.setNearbySchools(req.getNearbySchools());
         existing.setDistance(req.getDistance());
         existing.setRoomType(req.getRoomType());
-        existing.setRating(req.getRating());
-        existing.setReviews(req.getReviews());
+        existing.setRating(req.getRating() != null ? req.getRating() : existing.getRating());
+        existing.setReviews(req.getReviews() != null ? req.getReviews() : existing.getReviews());
         existing.setPrice(req.getPrice());
-        existing.setAvailable(true); // or existing.getAvailable() if you want to preserve current value
-        existing.setAmenities(String.join(",", req.getAmenities()));
+        existing.setAvailable(req.getAvailable() != null ? req.getAvailable() : existing.getAvailable());
+        existing.setAmenities(req.getAmenities() != null ? String.join(",", req.getAmenities()) : existing.getAmenities());
         existing.setWebsite(req.getWebsite());
         existing.setLatitude(req.getLatitude());
         existing.setLongitude(req.getLongitude());
@@ -77,6 +86,51 @@ public class ListingService {
     }
 
     public List<Listing> getByLandlord(Long landlordId) {
-        return listingRepository.findByLandlord_Id(landlordId);
+        System.out.println("Searching listings for landlord ID: " + landlordId);
+        List<Listing> listings = listingRepository.findByLandlord_Id(landlordId);
+        System.out.println("Found " + listings.size() + " listings");
+        return listings;
+    }
+
+    /* ---------------------
+       DTO / Mapper helpers
+       --------------------- */
+
+    public ListingResponse toResponse(Listing l) {
+        if (l == null) return null;
+        ListingResponse r = new ListingResponse();
+        r.setId(l.getId());
+        r.setTitle(l.getTitle());
+        r.setDescription(l.getDescription());
+        r.setImage(l.getImage());
+        // imageList is not persisted as array in your entity; controller/frontend uses previews.
+        r.setImageList(null);
+        r.setLocation(l.getLocation());
+        r.setPrice(l.getPrice());
+        r.setRoomType(l.getRoomType());
+        r.setRating(l.getRating());
+        r.setReviews(l.getReviews());
+        r.setAvailable(l.getAvailable());
+        r.setLatitude(l.getLatitude());
+        r.setLongitude(l.getLongitude());
+        r.setNearbySchools(l.getNearbySchools());
+        r.setDistance(l.getDistance());
+        r.setWebsite(l.getWebsite());
+
+        if (l.getAmenities() != null && !l.getAmenities().isBlank()) {
+            List<String> am = Arrays.stream(l.getAmenities().split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
+            r.setAmenities(am);
+        } else {
+            r.setAmenities(List.of());
+        }
+
+        return r;
+    }
+
+    public List<ListingResponse> toResponseList(List<Listing> listings) {
+        return listings.stream().map(this::toResponse).collect(Collectors.toList());
     }
 }
