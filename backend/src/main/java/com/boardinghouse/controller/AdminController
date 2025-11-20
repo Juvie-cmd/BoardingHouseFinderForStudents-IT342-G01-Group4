@@ -1,0 +1,46 @@
+@RestController
+@RequestMapping("/api/admin")
+@RequiredArgsConstructor
+public class AdminController {
+
+    private final ListingService listingService;
+    private final UserRepository userRepository;
+
+    @GetMapping("/listings")
+    public List<Listing> allListings() {
+        return listingService.getAll();
+    }
+
+    @PutMapping("/listing/{id}/approve")
+    public Listing approve(@PathVariable Long id) {
+        Listing listing = listingService.getById(id);
+        listing.setAvailable(true);
+        return listingService.update(id, toRequest(listing));
+    }
+
+    @PutMapping("/listing/{id}/reject")
+    public Listing reject(@PathVariable Long id) {
+        Listing listing = listingService.getById(id);
+        listing.setAvailable(false);
+        return listingService.update(id, toRequest(listing));
+    }
+
+    private ListingRequest toRequest(Listing listing) {
+        ListingRequest r = new ListingRequest();
+        r.setTitle(listing.getTitle());
+        r.setImage(listing.getImage());
+        r.setLocation(listing.getLocation());
+        r.setNearbySchools(listing.getNearbySchools());
+        r.setDistance(listing.getDistance());
+        r.setRoomType(listing.getRoomType());
+        r.setRating(listing.getRating());
+        r.setReviews(listing.getReviews());
+        r.setPrice(listing.getPrice());
+        r.setAvailable(listing.getAvailable());
+        r.setAmenities(List.of(listing.getAmenities().split(",")));
+        r.setWebsite(listing.getWebsite());
+        r.setLatitude(listing.getLatitude());
+        r.setLongitude(listing.getLongitude());
+        return r;
+    }
+}

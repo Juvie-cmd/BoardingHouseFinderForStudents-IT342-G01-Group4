@@ -1,33 +1,73 @@
 // src/pages/StudentPage/ListingDetails.jsx
-
-import { useState } from 'react';
-// Corrected import paths (two levels up)
-import { listings } from '../../data/listings';
+import { useState, useEffect } from 'react';
+import API from '../../api/api';
 import { ImageWithFallback } from '../../components/Shared/ImageWithFallback';
 import { Map } from '../../components/Shared/Map';
 import { LinkIcon, StarIcon, UsersIcon, CalendarIcon, CheckIcon, LocationIcon, ArrowLeftIcon } from '../../components/Shared/Icons';
 import './styles/ListingDetails.css';
 
-
 export function ListingDetails({ listingId, onBack }) {
-  const listing = listings.find(l => l.id === listingId);
+  const [listing, setListing] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!listing) {
+  useEffect(() => {
+    if (!listingId) {
+      setError("No listing id provided");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    API.get(`/student/listings/${listingId}`)
+      .then((res) => {
+        const data = res.data;
+        // convert amenities from comma string to array if needed
+        if (typeof data.amenities === 'string') {
+          data.amenities = data.amenities ? data.amenities.split(',').map(s => s.trim()) : [];
+        }
+        // ensure coordinates shape for Map component
+        if (data.latitude && data.longitude) {
+          data.coordinates = [data.latitude, data.longitude];
+        } else if (!data.coordinates) {
+          data.coordinates = [0, 0];
+        }
+        setListing(data);
+        setError(null);
+      })
+      .catch((err) => {
+        console.error('Failed to load listing', err);
+        setError('Failed to load listing');
+      })
+      .finally(() => setLoading(false));
+  }, [listingId]);
+
+  if (loading) {
+    return (
+      <div className="details-page">
+        <div className="container" style={{ padding: '4rem', textAlign: 'center' }}>
+          <p>Loading listing...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !listing) {
     return (
       <div className="details-page" style={{ alignItems: 'center', justifyContent: 'center' }}>
         <div className="text-center">
-          <h2>Listing not found</h2>
+          <h2>{error || 'Listing not found'}</h2>
           <button onClick={onBack} className="button button-primary">Back to Search</button>
         </div>
       </div>
     );
   }
 
-  // Mock additional images
-  const images = [listing.image, listing.image, listing.image];
+  // build images (backend may provide only one image)
+  const images = [listing.image, ...(listing.imageList ? listing.imageList.split(',') : [])].filter(Boolean);
 
   return (
     <div className="details-page">
@@ -47,7 +87,7 @@ export function ListingDetails({ listingId, onBack }) {
             <div className="card gallery-card">
               <div className="gallery-main-image-wrapper">
                 <ImageWithFallback
-                  src={images[selectedImage]}
+                  src={images[selectedImage] || listing.image}
                   alt={listing.title}
                   className="gallery-main-image"
                 />
@@ -55,19 +95,16 @@ export function ListingDetails({ listingId, onBack }) {
                   <button
                     className={`button button-secondary button-icon favorite-button ${isFavorite ? 'active' : ''}`}
                     onClick={() => setIsFavorite(!isFavorite)}
-                  >
-                    {/* <span className="icon">❤️</span> */}
-                  </button>
+                  />
                   <button className="button button-secondary button-icon">
                     <span className="icon"><LinkIcon size={16} /></span>
                   </button>
                 </div>
                 {listing.available && (
-                  <span className="badge">
-                    Available Now
-                  </span>
+                  <span className="badge">Available Now</span>
                 )}
               </div>
+
               <div className="gallery-thumbnails">
                 {images.map((img, idx) => (
                   <div
@@ -118,7 +155,7 @@ export function ListingDetails({ listingId, onBack }) {
                     <div className="label">Available From</div>
                     <div className="value">
                       <span className="icon"><CalendarIcon size={16} /></span>
-                      <span>Immediate</span>
+                      <span>{listing.availableFrom || 'Immediate'}</span>
                     </div>
                   </div>
                 </div>
@@ -129,12 +166,12 @@ export function ListingDetails({ listingId, onBack }) {
               <div className="details-section">
                 <h3>Amenities</h3>
                 <div className="details-grid-2-col">
-                  {listing.amenities.map((amenity) => (
+                  {Array.isArray(listing.amenities) ? listing.amenities.map((amenity) => (
                     <div key={amenity} className="amenity-item">
                       <span className="icon"><CheckIcon size={16} color="#22c55e" /></span>
                       <span>{amenity}</span>
                     </div>
-                  ))}
+                  )) : <div className="text-muted">No amenities listed</div>}
                 </div>
               </div>
 
@@ -151,12 +188,7 @@ export function ListingDetails({ listingId, onBack }) {
                 <div className="tabs-content">
                   {activeTab === 'description' && (
                     <div className="description-content">
-                      <p>
-                        This comfortable boarding house offers excellent accommodation for students.
-                        Located within easy reach of the university campus, it provides a safe and
-                        convenient living environment. The property is well-maintained with modern
-                        facilities and a friendly atmosphere.
-                      </p>
+                      <p>{listing.description || 'No description available.'}</p>
                     </div>
                   )}
                   {activeTab === 'rules' && (
@@ -202,7 +234,7 @@ export function ListingDetails({ listingId, onBack }) {
               <div className="landlord-info">
                 <div className="avatar">LL</div>
                 <div>
-                  <div className="name">Landlord Name</div>
+                  <div className="name">{listing.landlord?.name || 'Landlord Name'}</div>
                   <div className="role">Property Owner</div>
                 </div>
               </div>
@@ -217,7 +249,7 @@ export function ListingDetails({ listingId, onBack }) {
 
               <hr className="separator" />
 
-              <form className="visit-form">
+              <form className="visit-form" onSubmit={(e) => { e.preventDefault(); alert('Visit requested (demo)'); }}>
                 <h4>Schedule a Visit</h4>
                 <div className="form-group">
                   <label htmlFor="visit-date">Preferred Date</label>
@@ -229,12 +261,7 @@ export function ListingDetails({ listingId, onBack }) {
                 </div>
                 <div className="form-group">
                   <label htmlFor="visit-notes">Additional Notes</label>
-                  <textarea
-                    id="visit-notes"
-                    placeholder="Any specific requirements..."
-                    rows={3}
-                    className="textarea"
-                  />
+                  <textarea id="visit-notes" placeholder="Any specific requirements..." rows={3} className="textarea" />
                 </div>
                 <button type="submit" className="button button-primary button-full-width">Request Visit</button>
               </form>
