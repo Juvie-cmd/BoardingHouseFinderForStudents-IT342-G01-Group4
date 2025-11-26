@@ -22,7 +22,7 @@ export function ListingDetails({ listingId, onBack }) {
     }
 
     setLoading(true);
-    API.get(`/student/listings/${listingId}`)
+    API.get(`/student/listing/${listingId}`)
       .then((res) => {
         const data = res.data;
         // convert amenities from comma string to array if needed

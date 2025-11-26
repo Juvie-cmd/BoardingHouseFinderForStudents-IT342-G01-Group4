@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
         body: JSON.stringify({ name: name, email: email, password: password, role: role }),
       });
 
-      if (! res.ok) {
+      if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Registration failed");
       }
@@ -49,23 +49,23 @@ export function AuthProvider({ children }) {
         body: JSON.stringify({ email: email, password: password }),
       });
 
-      if (! res.ok) {
+      if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData. message || "Invalid email or password");
+        throw new Error(errorData.message || "Invalid email or password");
       }
 
       const data = await res.json();
       setToken(data.token);
       localStorage.setItem("token", data.token);
 
-      var basicUserData = { email: data.email, role: data. role, name: data.name, id: data.id };
+      var basicUserData = { email: data.email, role: data.role, name: data.name, id: data.id };
       setUser(basicUserData);
       localStorage.setItem("user", JSON.stringify(basicUserData));
 
       try {
         const profileRes = await fetch(API_BASE + "/profile", {
           headers: {
-            "Authorization": "Bearer " + data. token,
+            "Authorization": "Bearer " + data.token,
             "Content-Type": "application/json"
           },
         });
@@ -73,7 +73,7 @@ export function AuthProvider({ children }) {
         if (profileRes.ok) {
           const profileData = await profileRes.json();
           setUser(profileData);
-          localStorage. setItem("user", JSON.stringify(profileData));
+          localStorage.setItem("user", JSON.stringify(profileData));
         }
       } catch (profileError) {
         console.warn("Failed to fetch full profile after login:", profileError);
@@ -101,7 +101,7 @@ export function AuthProvider({ children }) {
 
     var userData = { email: email, name: name, role: role, id: Number(id), picture: picture };
     setUser(userData);
-    localStorage.setItem("user", JSON. stringify(userData));
+    localStorage.setItem("user", JSON.stringify(userData));
 
     if (authToken) {
       try {
@@ -113,7 +113,7 @@ export function AuthProvider({ children }) {
         });
 
         if (res.ok) {
-          const profileData = await res. json();
+          const profileData = await res.json();
           setUser(profileData);
           localStorage.setItem("user", JSON.stringify(profileData));
         }
@@ -134,7 +134,7 @@ export function AuthProvider({ children }) {
         },
       });
 
-      if (! res.ok) {
+      if (!res.ok) {
         if (res.status === 401) {
           logout();
           return null;
@@ -153,7 +153,7 @@ export function AuthProvider({ children }) {
   };
 
   const updateProfile = async (updates) => {
-    if (! token) throw new Error("Not authenticated");
+    if (!token) throw new Error("Not authenticated");
 
     try {
       const res = await fetch(API_BASE + "/profile", {
@@ -165,9 +165,9 @@ export function AuthProvider({ children }) {
         body: JSON.stringify(updates),
       });
 
-      if (!res. ok) {
+      if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData. message || "Failed to update profile");
+        throw new Error(errorData.message || "Failed to update profile");
       }
 
       const data = await res.json();
@@ -175,7 +175,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem("user", JSON.stringify(data));
       return data;
     } catch (error) {
-      console. error("Update profile error:", error);
+      console.error("Update profile error:", error);
       throw error;
     }
   };
@@ -183,15 +183,15 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage. removeItem("token");
+    localStorage.removeItem("token");
     localStorage.removeItem("user");
   };
 
   useEffect(() => {
-    const storedUser = localStorage. getItem("user");
-    if (storedUser && ! user) {
-      setUser(JSON. parse(storedUser));
-    } else if (token && ! user) {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser && !user) {
+      setUser(JSON.parse(storedUser));
+    } else if (token && !user) {
       fetchProfile().catch(function(err) {
         console.warn("Failed to fetch profile on load:", err);
       });
@@ -199,7 +199,7 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   return (
-    <AuthContext. Provider
+    <AuthContext.Provider
       value={{
         user: user,
         isAuthenticated: isAuthenticated,
@@ -219,6 +219,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (! context) throw new Error("useAuth must be used within an AuthProvider");
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }

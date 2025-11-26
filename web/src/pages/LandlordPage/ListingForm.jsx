@@ -28,7 +28,7 @@ export function ListingForm({ listingId, onBack }) {
     if (!isEditing || !listingId) return;
     setLoading(true);
 
-    API.get(`/student/listings/${listingId}`)
+    API.get(`/student/listing/${listingId}`)
       .then(res => {
         const l = res.data;
         const imgs = l.imageList

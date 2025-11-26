@@ -1,4 +1,4 @@
-// src/routes/index.jsx
+// src/routes/index. jsx
 
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -27,8 +27,18 @@ function LandlordDashboardWrapper() {
   const navigate = useNavigate();
   return (
     <LandlordDashboard
-      onCreateListing={() => navigate("/landlord/listings/new")}   // FIXED: correct URL
-      onEditListing={(id) => navigate(`/landlord/listings/edit/${id}`)} // FIXED
+      onCreateListing={() => navigate("/landlord/listings/new")}
+      onEditListing={(id) => navigate(`/landlord/listings/edit/${id}`)}
+    />
+  );
+}
+
+// ⭐ NEW: Wrapper to inject navigation callback into StudentDashboard
+function StudentDashboardWrapper() {
+  const navigate = useNavigate();
+  return (
+    <StudentDashboard
+      onViewDetails={(id) => navigate(`/details/${id}`)}
     />
   );
 }
@@ -41,9 +51,9 @@ export function AppRoutes() {
   // Determine home route based on role
   let homeRoute = "/";
   if (isAuthenticated && user) {
-    if (user.role === "student") homeRoute = "/search";
+    if (user. role === "student") homeRoute = "/search";
     else if (user.role === "landlord") homeRoute = "/landlord/dashboard";
-    else if (user.role === "admin") homeRoute = "/admin/dashboard";
+    else if (user. role === "admin") homeRoute = "/admin/dashboard";
   }
 
   return (
@@ -59,7 +69,7 @@ export function AppRoutes() {
       {/* Student Routes */}
       <Route path="/search" element={
         <PrivateRoute allowedRoles={['student']}>
-          <StudentDashboard />
+          <StudentDashboardWrapper />  {/* ✅ FIXED: Use wrapper with onViewDetails */}
         </PrivateRoute>
       } />
       <Route path="/details/:listingId" element={
@@ -76,7 +86,7 @@ export function AppRoutes() {
       {/* Landlord Routes */}
       <Route path="/landlord/dashboard" element={
         <PrivateRoute allowedRoles={['landlord']}>
-          <LandlordDashboardWrapper /> {/* FIXED: Wrapper routes correctly */}
+          <LandlordDashboardWrapper />
         </PrivateRoute>
       } />
 
