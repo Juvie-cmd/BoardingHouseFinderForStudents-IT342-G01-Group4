@@ -14,8 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -47,7 +47,7 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    // OAuth2UserService typed bean to avoid raw type warnings
+    // OAuth2UserService with proper typing
     @Bean
     public OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
         return new DefaultOAuth2UserService();
@@ -57,18 +57,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    CorsConfigurationSource corsConfigurationSource) throws Exception {
+
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                // Public endpoints
                 .requestMatchers("/api/auth/**", "/oauth2/**", "/login**", "/error").permitAll()
+
+                // Role-based API access
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")       // 🔐 Admin only
+                .requestMatchers("/api/landlord/**").hasRole("LANDLORD") // 🏠 Landlord only
+                .requestMatchers("/api/student/**").hasAnyRole("STUDENT", "LANDLORD", "ADMIN") // 👩‍🎓 Accessible by all authenticated
+
+                // Require authentication for profile and others
                 .requestMatchers("/api/profile/**").authenticated()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
-                .userInfoEndpoint(userInfo -> userInfo
-                    .userService(oauth2UserService()) // typed service
-                )
+                .userInfoEndpoint(userInfo -> userInfo.userService(oauth2UserService()))
                 .successHandler(oAuth2LoginSuccessHandler)
             )
             .sessionManagement(session -> session
