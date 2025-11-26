@@ -9,7 +9,8 @@ export function PrivateRoute({ children, allowedRoles }) {
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  if (allowedRoles && !allowedRoles.includes(user?.role)) {
+  // Allow admin to access all routes
+  if (allowedRoles && !allowedRoles.includes(user?.role) && user?.role !== 'admin') {
     return <Navigate to="/home" replace />;
   }
 
