@@ -101,6 +101,18 @@ export function Header({ favorites = [], onNavigate }) {
               </button>
               <button
                 className="button-link"
+                onClick={() => onNavigate('search')}
+              >
+                Student View
+              </button>
+              <button
+                className="button-link"
+                onClick={() => navigate('/landlord/dashboard')}
+              >
+                Landlord View
+              </button>
+              <button
+                className="button-link"
                 onClick={() => onNavigate('profile')}
               >
                 Profile
