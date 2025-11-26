@@ -59,4 +59,9 @@ public class AuthController {
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok(ApiResponse.success("Logged out successfully"));
     }
+    // TEMPORARY - Add this method inside AuthController class
+@GetMapping("/generate-hash")
+public String generateHash(@RequestParam String password) {
+    return new org.springframework. security.crypto.bcrypt.BCryptPasswordEncoder().encode(password);
+}
 }

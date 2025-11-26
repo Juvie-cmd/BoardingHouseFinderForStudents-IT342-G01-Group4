@@ -1,46 +1,72 @@
+package com.boardinghouse.controller;
+
+import com.boardinghouse.dto.ListingResponse;
+import com.boardinghouse.dto.UserResponse;
+import com. boardinghouse.dto.UserUpdateRequest;
+import com.boardinghouse.entity.Listing;
+import com.boardinghouse.service.AdminService;
+import com.boardinghouse.service.ListingService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http. ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org. springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
+    private final AdminService adminService;
     private final ListingService listingService;
-    private final UserRepository userRepository;
+
+    // ==================== USER MANAGEMENT ====================
+
+    @GetMapping("/users")
+    public List<UserResponse> getAllUsers() {
+        return adminService.getAllUsers();
+    }
+
+    @PutMapping("/user/{id}")
+    public ResponseEntity<UserResponse> updateUser(
+            @PathVariable Long id,
+            @RequestBody UserUpdateRequest request) {
+        UserResponse updated = adminService.updateUser(id, request);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/user/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        adminService.deleteUser(id);
+        return ResponseEntity.noContent(). build();
+    }
+
+    // ==================== LISTING MANAGEMENT ====================
 
     @GetMapping("/listings")
-    public List<Listing> allListings() {
-        return listingService.getAll();
+    public List<ListingResponse> getAllListings() {
+        List<Listing> listings = listingService. getAll();
+        return listingService.toResponseList(listings);
     }
 
     @PutMapping("/listing/{id}/approve")
-    public Listing approve(@PathVariable Long id) {
-        Listing listing = listingService.getById(id);
-        listing.setAvailable(true);
-        return listingService.update(id, toRequest(listing));
+    public ResponseEntity<ListingResponse> approveListing(@PathVariable Long id) {
+        ListingResponse approved = adminService.approveListing(id);
+        return ResponseEntity. ok(approved);
     }
 
     @PutMapping("/listing/{id}/reject")
-    public Listing reject(@PathVariable Long id) {
-        Listing listing = listingService.getById(id);
-        listing.setAvailable(false);
-        return listingService.update(id, toRequest(listing));
+    public ResponseEntity<ListingResponse> rejectListing(@PathVariable Long id) {
+        ListingResponse rejected = adminService.rejectListing(id);
+        return ResponseEntity.ok(rejected);
     }
 
-    private ListingRequest toRequest(Listing listing) {
-        ListingRequest r = new ListingRequest();
-        r.setTitle(listing.getTitle());
-        r.setImage(listing.getImage());
-        r.setLocation(listing.getLocation());
-        r.setNearbySchools(listing.getNearbySchools());
-        r.setDistance(listing.getDistance());
-        r.setRoomType(listing.getRoomType());
-        r.setRating(listing.getRating());
-        r.setReviews(listing.getReviews());
-        r.setPrice(listing.getPrice());
-        r.setAvailable(listing.getAvailable());
-        r.setAmenities(List.of(listing.getAmenities().split(",")));
-        r.setWebsite(listing.getWebsite());
-        r.setLatitude(listing.getLatitude());
-        r.setLongitude(listing.getLongitude());
-        return r;
+    @DeleteMapping("/listing/{id}")
+    public ResponseEntity<Void> deleteListing(@PathVariable Long id) {
+        listingService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
