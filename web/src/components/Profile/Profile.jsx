@@ -22,9 +22,31 @@ export function Profile({
 }) {
   const { user, fetchProfile, updateProfile } = useAuth();
 
-  const [formData, setFormData] = useState(initialFormData || {
-    name: user?.name || '',
-    email: user?.email || ''
+  const buildFormDataFromUser = (userData, defaultData) => {
+    if (!defaultData) {
+      return { 
+        name: (userData && userData.name) || '', 
+        email: (userData && userData. email) || '' 
+      };
+    }
+    
+    const result = {};
+    const keys = Object.keys(defaultData);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      if (userData && userData[key] !== undefined && userData[key] !== null) {
+        result[key] = userData[key];
+      } else if (defaultData[key] !== undefined && defaultData[key] !== null) {
+        result[key] = defaultData[key];
+      } else {
+        result[key] = '';
+      }
+    }
+    return result;
+  };
+
+  const [formData, setFormData] = useState(function() {
+    return buildFormDataFromUser(user, initialFormData);
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -32,58 +54,49 @@ export function Profile({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // ✅ Fetch profile ONLY once on mount (prevents flickering)
   useEffect(() => {
     const loadProfile = async () => {
       try {
         setLoading(true);
         const profileData = await fetchProfile();
         if (profileData) {
-          setFormData({
-            name: profileData.name || '',
-            email: profileData.email || ''
-          });
+          setFormData(buildFormDataFromUser(profileData, initialFormData));
         }
       } catch (err) {
         console.error('Failed to fetch profile:', err);
-        setError('Failed to load profile. Please refresh.');
+        setError('Failed to load profile.  Please refresh.');
       } finally {
         setLoading(false);
       }
     };
 
-    // Fetch only if user not yet loaded
-    if (!user) {
+    if (! user) {
       loadProfile();
     } else {
-      setFormData({
-        name: user.name || '',
-        email: user.email || ''
-      });
+      setFormData(buildFormDataFromUser(user, initialFormData));
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // ✅ Runs once only
+  }, []);
 
-  // ✅ Update local form when context user changes (no refetch)
   useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || '',
-        email: user.email || ''
-      });
+    if (user && initialFormData) {
+      setFormData(buildFormDataFromUser(user, initialFormData));
     }
-  }, [user]);
+  }, [user, initialFormData]);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(function(prev) {
+      return Object.assign({}, prev, { [field]: value });
+    });
   };
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+    const file = e. target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setProfileImage(reader.result);
+      reader.onloadend = function() {
+        setProfileImage(reader.result);
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -116,7 +129,7 @@ export function Profile({
       variant={layoutVariant}
     >
       <ProfileGrid>
-        <div className={sidebar ? 'profile-sidebar' : ''}>
+        <div className={sidebar ?  'profile-sidebar' : ''}>
           <ProfileCard
             user={formData}
             profileImage={profileImage}
@@ -135,9 +148,9 @@ export function Profile({
               <h3>Profile Information</h3>
               <button
                 className="button button-link"
-                onClick={() => setIsEditing(!isEditing)}
+                onClick={function() { setIsEditing(! isEditing); }}
               >
-                {isEditing ? 'Cancel' : 'Edit'}
+                {isEditing ?  'Cancel' : 'Edit'}
               </button>
             </CardHeader>
 
@@ -145,7 +158,7 @@ export function Profile({
               {error && <Alert variant="error">{error}</Alert>}
               <form onSubmit={handleSubmit} className="profile-form">
                 {typeof formFields === 'function'
-                  ? formFields({ formData, handleInputChange, isEditing })
+                  ? formFields({ formData: formData, handleInputChange: handleInputChange, isEditing: isEditing })
                   : formFields}
 
                 {isEditing && (
@@ -156,7 +169,7 @@ export function Profile({
                     <button
                       type="button"
                       className="button button-secondary"
-                      onClick={() => setIsEditing(false)}
+                      onClick={function() { setIsEditing(false); }}
                     >
                       Cancel
                     </button>

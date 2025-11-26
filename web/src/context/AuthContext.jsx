@@ -1,4 +1,3 @@
-// AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
@@ -8,19 +7,18 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [isLoading, setIsLoading] = useState(false);
-  const isAuthenticated = !!token;
+  const isAuthenticated = token ?  true : false;
 
-  // ===== REGISTER =====
   const register = async (name, email, password, role) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/auth/register`, {
+      const res = await fetch(API_BASE + "/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role }),
+        body: JSON.stringify({ name: name, email: email, password: password, role: role }),
       });
 
-      if (!res.ok) {
+      if (! res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Registration failed");
       }
@@ -42,28 +40,44 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // ===== LOGIN =====
   const login = async (email, password) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
+      const res = await fetch(API_BASE + "/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email, password: password }),
       });
 
-      if (!res.ok) {
+      if (! res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Invalid email or password");
+        throw new Error(errorData. message || "Invalid email or password");
       }
 
       const data = await res.json();
       setToken(data.token);
       localStorage.setItem("token", data.token);
 
-      const userData = { email: data.email, role: data.role, name: data.name, id: data.id };
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
+      var basicUserData = { email: data.email, role: data. role, name: data.name, id: data.id };
+      setUser(basicUserData);
+      localStorage.setItem("user", JSON.stringify(basicUserData));
+
+      try {
+        const profileRes = await fetch(API_BASE + "/profile", {
+          headers: {
+            "Authorization": "Bearer " + data. token,
+            "Content-Type": "application/json"
+          },
+        });
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          setUser(profileData);
+          localStorage. setItem("user", JSON.stringify(profileData));
+        }
+      } catch (profileError) {
+        console.warn("Failed to fetch full profile after login:", profileError);
+      }
 
       return data;
     } catch (error) {
@@ -74,39 +88,53 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // ===== GOOGLE OAUTH CALLBACK =====
-  const handleGoogleCallback = async ({ token, email, name, role, id, picture }) => {
-  setToken(token);
-  localStorage.setItem("token", token);
+  const handleGoogleCallback = async (params) => {
+    var authToken = params.token;
+    var email = params.email;
+    var name = params.name;
+    var role = params.role;
+    var id = params.id;
+    var picture = params.picture;
 
-  const userData = { email, name, role, id: Number(id), picture };
-  setUser(userData);
-  localStorage.setItem("user", JSON.stringify(userData));
+    setToken(authToken);
+    localStorage.setItem("token", authToken);
 
-  // Optional: fetch full profile from backend
-  if (token) {
-    try {
-      await fetchProfile();
-    } catch (err) {
-      console.warn("Failed to fetch profile after Google login:", err);
+    var userData = { email: email, name: name, role: role, id: Number(id), picture: picture };
+    setUser(userData);
+    localStorage.setItem("user", JSON. stringify(userData));
+
+    if (authToken) {
+      try {
+        const res = await fetch(API_BASE + "/profile", {
+          headers: {
+            "Authorization": "Bearer " + authToken,
+            "Content-Type": "application/json"
+          },
+        });
+
+        if (res.ok) {
+          const profileData = await res. json();
+          setUser(profileData);
+          localStorage.setItem("user", JSON.stringify(profileData));
+        }
+      } catch (err) {
+        console.warn("Failed to fetch profile after Google login:", err);
+      }
     }
-  }
-};
+  };
 
-
-  // ===== FETCH PROFILE =====
   const fetchProfile = async () => {
     if (!token) return null;
 
     try {
-      const res = await fetch(`${API_BASE}/profile`, {
-        headers: { 
-          "Authorization": `Bearer ${token}`,
+      const res = await fetch(API_BASE + "/profile", {
+        headers: {
+          "Authorization": "Bearer " + token,
           "Content-Type": "application/json"
         },
       });
 
-      if (!res.ok) {
+      if (! res.ok) {
         if (res.status === 401) {
           logout();
           return null;
@@ -124,23 +152,22 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // ===== UPDATE PROFILE =====
   const updateProfile = async (updates) => {
-    if (!token) throw new Error("Not authenticated");
+    if (! token) throw new Error("Not authenticated");
 
     try {
-      const res = await fetch(`${API_BASE}/profile`, {
+      const res = await fetch(API_BASE + "/profile", {
         method: "PUT",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` 
+          "Authorization": "Bearer " + token
         },
         body: JSON.stringify(updates),
       });
 
-      if (!res.ok) {
+      if (!res. ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to update profile");
+        throw new Error(errorData. message || "Failed to update profile");
       }
 
       const data = await res.json();
@@ -148,43 +175,41 @@ export function AuthProvider({ children }) {
       localStorage.setItem("user", JSON.stringify(data));
       return data;
     } catch (error) {
-      console.error("Update profile error:", error);
+      console. error("Update profile error:", error);
       throw error;
     }
   };
 
-  // ===== LOGOUT =====
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem("token");
+    localStorage. removeItem("token");
     localStorage.removeItem("user");
   };
 
-  // ===== RESTORE USER FROM LOCALSTORAGE ON PAGE LOAD =====
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser && !user) {
-      setUser(JSON.parse(storedUser));
-    } else if (token && !user) {
-      fetchProfile().catch(err => {
+    const storedUser = localStorage. getItem("user");
+    if (storedUser && ! user) {
+      setUser(JSON. parse(storedUser));
+    } else if (token && ! user) {
+      fetchProfile().catch(function(err) {
         console.warn("Failed to fetch profile on load:", err);
       });
     }
   }, [token]);
 
   return (
-    <AuthContext.Provider
-      value={{ 
-        user, 
-        isAuthenticated, 
-        isLoading,
-        login, 
-        register, 
-        logout, 
-        fetchProfile, 
-        updateProfile,
-        handleGoogleCallback
+    <AuthContext. Provider
+      value={{
+        user: user,
+        isAuthenticated: isAuthenticated,
+        isLoading: isLoading,
+        login: login,
+        register: register,
+        logout: logout,
+        fetchProfile: fetchProfile,
+        updateProfile: updateProfile,
+        handleGoogleCallback: handleGoogleCallback
       }}
     >
       {children}
@@ -194,6 +219,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  if (! context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }
