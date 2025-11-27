@@ -1,4 +1,4 @@
-package com.boardinghouse. dto;
+package com.boardinghouse.dto;
 
 import lombok.Data;
 import java.time.LocalDateTime;

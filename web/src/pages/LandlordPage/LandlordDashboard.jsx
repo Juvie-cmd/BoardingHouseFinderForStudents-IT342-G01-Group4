@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import API from '../../api/api';
 import { ImageWithFallback } from '../../components/Shared/ImageWithFallback';
 import { Dashboard, StatCard, PerformanceList, DataTable } from '../../components/Dashboard';
-import { HomeIcon, UsersIcon, MoneyIcon, StarIcon, EyeIcon, MessageIcon, ChartIcon, EditIcon, LocationIcon, PlusIcon, BarChartIcon } from '../../components/Shared/Icons';
+import { HomeIcon, StarIcon, EyeIcon, MessageIcon, ChartIcon, EditIcon, LocationIcon, PlusIcon, BarChartIcon, TrashIcon, CloseIcon } from '../../components/Shared/Icons';
 import './styles/LandlordDashboard.css';
 
 export function LandlordDashboard({ onCreateListing, onEditListing }) {
@@ -11,32 +11,33 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
   const [recentInquiries, setRecentInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   // Stats placeholder — will compute from data
   const stats = {
     totalListings: myListings.length,
     activeListings: myListings.filter(l => l.available).length,
-    totalInquiries: recentInquiries.length,
+    totalInquiries: recentInquiries. length,
     monthlyRevenue: myListings.reduce((sum, l) => sum + (l.price || 0), 0) || 0,
     viewsThisMonth: 0,
-    averageRating: myListings.length ? (myListings.reduce((s, l) => s + (l.rating || 0), 0) / myListings.length).toFixed(1) : 0,
+    averageRating: myListings.length ?  (myListings.reduce((s, l) => s + (l.rating || 0), 0) / myListings.length). toFixed(1) : 0,
   };
 
-  useEffect(() => {
+  const fetchData = () => {
     console.log("Fetching landlord listings...");
     setLoading(true);
     
     Promise.all([
       API.get("/landlord/listings"),
-      API.get("/landlord/inquiries").catch(() => ({ data: [] }))
+      API.get("/landlord/inquiries"). catch(() => ({ data: [] }))
     ])
       .then(([listRes, inqRes]) => {
-        console.log("Listings response:", listRes.data);
+        console.log("Listings response:", listRes. data);
         
         // ensure amenities are arrays
         const normalized = (listRes.data || []).map(l => {
           if (typeof l.amenities === 'string') {
-            l.amenities = l.amenities ? l.amenities.split(',').map(s => s.trim()) : [];
+            l.amenities = l.amenities ?  l.amenities.split(','). map(s => s.trim()) : [];
           }
           return l;
         });
@@ -48,11 +49,33 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
       })
       .catch(err => {
         console.error('Failed to load landlord data:', err);
-        console.error('Error response:', err.response?.data);
+        console.error('Error response:', err.response?. data);
         setError(err.response?.data?.message || 'Failed to load listings');
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
+
+  // Delete listing functions
+  const handleDeleteListing = (listing) => setDeleteConfirm(listing);
+
+  const confirmDeleteListing = () => {
+    API.delete(`/landlord/listing/${deleteConfirm.id}`)
+      .then(() => {
+        setMyListings(myListings.filter(l => l.id !== deleteConfirm.id));
+        setDeleteConfirm(null);
+        alert('Listing deleted successfully!');
+      })
+      .catch(err => {
+        console.error('Delete listing failed', err);
+        alert('Delete failed: ' + (err.response?. data?. message || err.message));
+      });
+  };
+
+  const cancelDeleteListing = () => setDeleteConfirm(null);
 
   const getInquiryStatusClass = (status) => {
     if (status === 'New') return 'badge-primary';
@@ -69,16 +92,16 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
   ];
 
   const performanceItems = [
-    { icon: <EyeIcon size={20} />, label: 'Total Views', value: stats.viewsThisMonth, iconColor: 'blue' },
+    { icon: <EyeIcon size={20} />, label: 'Total Views', value: stats. viewsThisMonth, iconColor: 'blue' },
     { icon: <MessageIcon size={20} />, label: 'Inquiries', value: stats.totalInquiries, iconColor: 'purple' },
     { icon: <ChartIcon size={20} />, label: 'Conversion Rate', value: '7.2%', iconColor: 'green' },
     { icon: <StarIcon size={20} fill="#FFD700" color="#FFD700" />, label: 'Avg Rating', value: stats.averageRating, iconColor: 'yellow' },
   ];
 
   const inquiryColumns = [
-    { header: 'Student', field: 'student', render: (i) => i.student?.name || 'Student' },
-    { header: 'Listing', field: 'listing', render: (i) => i.listing?.title || 'Listing' },
-    { header: 'Date', field: 'date', render: (i) => i.dateSent || i.date || '-' },
+    { header: 'Student', field: 'student', render: (i) => i.student?. name || 'Student' },
+    { header: 'Listing', field: 'listing', render: (i) => i. listing?.title || 'Listing' },
+    { header: 'Date', field: 'date', render: (i) => i. dateSent || i.date || '-' },
     {
       header: 'Status',
       field: 'status',
@@ -118,7 +141,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
           <div className="alert alert-error">{error}</div>
           <button 
             className="button button-primary" 
-            onClick={() => window.location.reload()}
+            onClick={fetchData}
             style={{ marginTop: '1rem' }}
           >
             Retry
@@ -133,7 +156,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
           <div className="overview-content">
             <div className="stats-grid">
               <StatCard title="Total Listings" value={stats.totalListings} icon={<HomeIcon size={24} />} iconColor="blue" description={`${stats.activeListings} active`} />
-              <StatCard title="Total Inquiries" value={stats.totalInquiries} icon={<MessageIcon size={24} />} iconColor="purple" description={`${recentInquiries.filter(i => i.status === 'New').length} new`} />
+              <StatCard title="Total Inquiries" value={stats.totalInquiries} icon={<MessageIcon size={24} />} iconColor="purple" description={`${recentInquiries. filter(i => i.status === 'New').length} new`} />
               <StatCard title="Average Rating" value={stats.averageRating} icon={<StarIcon size={24} fill="#FFD700" color="#FFD700" />} iconColor="yellow" description={`${myListings.reduce((sum, l) => sum + (l.reviews || 0), 0)} reviews`} />
             </div>
 
@@ -153,10 +176,10 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                               <p className="inquiry-student">{inquiry.student?.name || 'Student'}</p>
                               <p className="inquiry-listing">{inquiry.listing?.title || 'Listing'}</p>
                             </div>
-                            <span className={`badge ${getInquiryStatusClass(inquiry.status)}`}>{inquiry.status}</span>
+                            <span className={`badge ${getInquiryStatusClass(inquiry.status)}`}>{inquiry. status}</span>
                           </div>
                           <p className="inquiry-message">{inquiry.message}</p>
-                          <p className="inquiry-date">{inquiry.dateSent || inquiry.date}</p>
+                          <p className="inquiry-date">{inquiry.dateSent || inquiry. date}</p>
                         </div>
                       ))}
                     </div>
@@ -199,8 +222,8 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                               <span className="icon"><LocationIcon size={16} /></span> {listing.location}
                             </div>
                           </div>
-                          <span className={`badge ${listing.available ? 'badge-success' : 'badge-secondary'}`}>
-                            {listing.available ? 'Available' : 'Occupied'}
+                          <span className={`badge ${listing.available ? 'badge-success' : 'badge-warning'}`}>
+                            {listing.available ? 'Available' : 'Pending Approval'}
                           </span>
                         </div>
                         <div className="listing-item-stats">
@@ -228,8 +251,8 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                           <button className="button button-secondary button-small">
                             <span className="icon"><EyeIcon size={16} /></span> View
                           </button>
-                          <button className="button button-secondary button-small">
-                            <span className="icon"><MessageIcon size={16} /></span> Messages
+                          <button className="button button-danger button-small" onClick={() => handleDeleteListing(listing)}>
+                            <span className="icon"><TrashIcon size={16} /></span> Delete
                           </button>
                         </div>
                       </div>
@@ -310,7 +333,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                 <div className="card-content">
                   <div className="stat-value-main">
                     {myListings.length > 0 
-                      ? Math.round((stats.activeListings / myListings.length) * 100) 
+                      ? Math.round((stats. activeListings / myListings.length) * 100) 
                       : 0}%
                   </div>
                   <p className="stat-label">{stats.activeListings} of {myListings.length} available</p>
@@ -361,14 +384,40 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
   };
 
   return (
-    <Dashboard
-      title="Landlord Dashboard"
-      subtitle="Manage your properties and track performance"
-      headerActions={headerActions}
-      tabs={tabs}
-      defaultTab="overview"
-      renderTabContent={renderTabContent}
-      tabsClassName="dashboard-tabs-list"
-    />
+    <>
+      <Dashboard
+        title="Landlord Dashboard"
+        subtitle="Manage your properties and track performance"
+        headerActions={headerActions}
+        tabs={tabs}
+        defaultTab="overview"
+        renderTabContent={renderTabContent}
+        tabsClassName="dashboard-tabs-list"
+      />
+
+      {/* Delete Listing Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="modal-overlay" onClick={cancelDeleteListing}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Confirm Delete</h3>
+              <button className="button button-link" onClick={cancelDeleteListing}>
+                <CloseIcon size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to delete <strong>{deleteConfirm.title}</strong>?</p>
+              <p className="text-muted" style={{ marginTop: '0.5rem' }}>This action cannot be undone.</p>
+            </div>
+            <div className="modal-actions">
+              <button className="button button-secondary" onClick={cancelDeleteListing}>Cancel</button>
+              <button className="button button-danger" onClick={confirmDeleteListing}>
+                <span className="icon"><TrashIcon size={16} /></span> Delete Listing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -388,3 +388,20 @@
   background-color: #ef4444;
   color: white;
 }
+
+/* Warning button style */
+.button-warning {
+  background-color: #f59e0b;
+  color: white;
+  border: none;
+}
+
+.button-warning:hover {
+  background-color: #d97706;
+}
+
+/* Badge warning */
+.badge-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
