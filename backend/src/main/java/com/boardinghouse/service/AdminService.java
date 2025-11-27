@@ -1,12 +1,12 @@
 package com.boardinghouse. service;
 
 import com.boardinghouse. dto.ListingResponse;
-import com.boardinghouse. dto.UserResponse;
-import com.boardinghouse.dto. UserUpdateRequest;
+import com.boardinghouse.dto. UserResponse;
+import com.boardinghouse.dto.UserUpdateRequest;
 import com.boardinghouse.entity. Listing;
-import com.boardinghouse. entity.User;
+import com.boardinghouse.entity.User;
 import com.boardinghouse.repository.ListingRepository;
-import com.boardinghouse.repository.UserRepository;
+import com.boardinghouse.repository. UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype. Service;
 
@@ -36,7 +36,7 @@ public class AdminService {
      * Update a user's information
      */
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
-        User user = userRepository. findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
         if ("admin".equalsIgnoreCase(user.getRole())) {
@@ -51,16 +51,16 @@ public class AdminService {
             user.setName(request.getName());
         }
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            if (!user.getEmail().equals(request. getEmail()) && 
+            if (! user.getEmail(). equals(request.getEmail()) && 
                 userRepository.existsByEmail(request.getEmail())) {
                 throw new RuntimeException("Email already exists");
             }
             user.setEmail(request.getEmail());
         }
-        if (request.getRole() != null && ! request.getRole(). isBlank()) {
+        if (request. getRole() != null && ! request.getRole(). isBlank()) {
             user.setRole(request.getRole(). toLowerCase());
         }
-        if (request. getActive() != null) {
+        if (request.getActive() != null) {
             user.setActive(request.getActive());
         }
         if (request.getPhone() != null) {
@@ -75,10 +75,10 @@ public class AdminService {
      * Delete a user
      */
     public void deleteUser(Long id) {
-        User user = userRepository.findById(id)
+        User user = userRepository. findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
-        if ("admin".equalsIgnoreCase(user.getRole())) {
+        if ("admin". equalsIgnoreCase(user.getRole())) {
             throw new RuntimeException("Cannot delete admin accounts");
         }
 
@@ -89,8 +89,8 @@ public class AdminService {
      * Approve a listing
      */
     public ListingResponse approveListing(Long id) {
-        Listing listing = listingRepository.findById(id)
-                . orElseThrow(() -> new RuntimeException("Listing not found with id: " + id));
+        Listing listing = listingRepository. findById(id)
+                .orElseThrow(() -> new RuntimeException("Listing not found with id: " + id));
 
         listing.setAvailable(true);
         Listing saved = listingRepository.save(listing);
@@ -114,17 +114,23 @@ public class AdminService {
         response.setId(user.getId());
         response.setName(user.getName());
         response.setEmail(user.getEmail());
-        response. setRole(capitalizeFirst(user.getRole()));
-        response. setActive(user. getActive());
-        response.setPhone(user.getPhone());
+        
+        // Capitalize role
+        String role = user.getRole();
+        if (role != null && ! role.isEmpty()) {
+            response.setRole(role.substring(0, 1).toUpperCase() + role.substring(1). toLowerCase());
+        } else {
+            response.setRole("Unknown");
+        }
+        
+        response.setActive(user.getActive() != null ? user. getActive() : true);
+        response. setPhone(user. getPhone());
         response.setCreatedAt(user.getCreatedAt());
-        response. setJoinDate(user.getCreatedAt() != null ? 
-            user.getCreatedAt().toLocalDate().toString() : null);
+        
+        if (user.getCreatedAt() != null) {
+            response.setJoinDate(user.getCreatedAt(). toLocalDate(). toString());
+        }
+        
         return response;
-    }
-
-    private String capitalizeFirst(String str) {
-        if (str == null || str.isEmpty()) return "Unknown";
-        return str.substring(0, 1).toUpperCase() + str.substring(1). toLowerCase();
     }
 }
