@@ -13,6 +13,12 @@ import lombok.*;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Listing {
 
+    public enum ListingStatus {
+        PENDING,
+        APPROVED,
+        REJECTED
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -43,6 +49,16 @@ public class Listing {
     private Double price;
 
     private Boolean available = true;
+
+    // Listing approval status
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    @Builder.Default
+    private ListingStatus status = ListingStatus.PENDING;
+
+    // Rejection notes from admin
+    @Column(columnDefinition = "TEXT")
+    private String rejectionNotes;
 
     // Amenities array stored as comma-separated string
     @Column(columnDefinition = "TEXT")

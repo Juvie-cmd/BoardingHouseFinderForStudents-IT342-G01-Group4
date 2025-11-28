@@ -23,4 +23,15 @@ public class ListingResponse {
     private String nearbySchools;
     private String distance;
     private String website;
+    private String status; // PENDING, APPROVED, REJECTED
+    private String rejectionNotes;
+    private LandlordInfo landlord;
+    
+    @Data
+    public static class LandlordInfo {
+        private Long id;
+        private String name;
+        private String email;
+        private String phone;
+    }
 }
