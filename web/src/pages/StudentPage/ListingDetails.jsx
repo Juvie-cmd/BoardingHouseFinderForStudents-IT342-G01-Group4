@@ -132,8 +132,8 @@ export function ListingDetails({ listingId, onBack }) {
     );
   }
 
-  // build images (backend may provide only one image)
-  const images = [listing.image, ...(listing.imageList ? listing.imageList.split(',') : [])].filter(Boolean);
+  // build images (backend now returns imageList as array)
+  const images = [listing.image, ...(Array.isArray(listing.imageList) ? listing.imageList : [])].filter(Boolean);
 
   return (
     <div className="details-page">

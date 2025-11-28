@@ -1,6 +1,7 @@
 // src/pages/LandlordPage/ListingForm.jsx
 import React, { useState, useEffect } from 'react';
 import API from '../../api/api';
+import { uploadMultipleImages, supabase } from '../../utils/supabaseClient';
 import { ArrowLeftIcon, CloudIcon, CloseIcon } from '../../components/Shared/Icons';
 import { LocationPicker } from '../../components/Shared/LocationPicker';
 import './styles/ListingForm.css';
@@ -9,6 +10,9 @@ const toast = {
   success: (message) => alert(`Success: ${message}`),
   error: (message) => alert(`Error: ${message}`),
 };
+
+// Maximum number of images allowed per listing
+const MAX_IMAGES = 10;
 
 export function ListingForm({ listingId, onBack }) {
   const isEditing = !!listingId;
@@ -20,9 +24,11 @@ export function ListingForm({ listingId, onBack }) {
     minStay: '', maxOccupancy: '', depositAmount: '', utilitiesIncluded: true,
     latitude: '', longitude: ''
   });
-  const [uploadedImages, setUploadedImages] = useState([]); // preview urls
+  const [uploadedImages, setUploadedImages] = useState([]); // Supabase URLs or preview urls for editing
   const [validationErrors, setValidationErrors] = useState({});
   const [loading, setLoading] = useState(isEditing);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Load listing when editing
   useEffect(() => {
@@ -56,7 +62,7 @@ export function ListingForm({ listingId, onBack }) {
           longitude: l.longitude || ''
         });
 
-        setUploadedImages(imgs.slice(0, 10));
+        setUploadedImages(imgs.slice(0, MAX_IMAGES));
       })
       .catch(err => {
         console.error('Failed to load listing for edit', err);
@@ -73,28 +79,65 @@ export function ListingForm({ listingId, onBack }) {
     setFormData(prev => ({ ...prev, amenities: value }));
   };
 
-  // ⭐ FIXED — sets main image + previews
-  const handleImageUpload = (event) => {
+  // ⭐ Upload images to Supabase Storage
+  const handleImageUpload = async (event) => {
     const files = Array.from(event.target.files);
-    const newImageUrls = files.map(file => URL.createObjectURL(file));
-
-    const updated = [...uploadedImages, ...newImageUrls].slice(0, 10);
-    setUploadedImages(updated);
-
-    // ⭐ MAIN FIX — ensure image is set so validation passes
-    if (updated.length > 0) {
-      setFormData(prev => ({
-        ...prev,
-        image: updated[0],
-        imageList: updated
-      }));
+    
+    if (files.length === 0) return;
+    
+    // Check if we would exceed the image limit
+    const totalImages = uploadedImages.length + files.length;
+    if (totalImages > MAX_IMAGES) {
+      toast.error(`You can only upload up to ${MAX_IMAGES} images. Currently have ${uploadedImages.length}.`);
+      return;
     }
 
-    toast.success(`${files.length} image(s) selected for preview.`);
+    // Check if Supabase is configured
+    if (!supabase) {
+      toast.error('Image upload is not configured. Please contact the administrator.');
+      return;
+    }
+
+    setUploadingImages(true);
+    setUploadProgress(0);
+
+    try {
+      const { urls, errors } = await uploadMultipleImages(
+        files, 
+        'listing-images',
+        (progress) => setUploadProgress(progress)
+      );
+
+      if (errors.length > 0) {
+        console.error('Upload errors:', errors);
+        toast.error(`Failed to upload ${errors.length} image(s). Please try again.`);
+      }
+
+      if (urls.length > 0) {
+        const updated = [...uploadedImages, ...urls].slice(0, MAX_IMAGES);
+        setUploadedImages(updated);
+
+        // Update formData with the Supabase URLs
+        setFormData(prev => ({
+          ...prev,
+          image: updated[0],
+          imageList: updated
+        }));
+
+        toast.success(`${urls.length} image(s) uploaded successfully!`);
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload images. Please try again.');
+    } finally {
+      setUploadingImages(false);
+      setUploadProgress(0);
+    }
   };
 
   const removeImage = (indexToRemove) => {
-    try { URL.revokeObjectURL(uploadedImages[indexToRemove]); } catch {}
+    // Note: We don't delete from Supabase here to keep it simple
+    // Old images will be cleaned up by storage policies if needed
     const updated = uploadedImages.filter((_, index) => index !== indexToRemove);
 
     setUploadedImages(updated);
@@ -362,16 +405,31 @@ export function ListingForm({ listingId, onBack }) {
           <div className="card form-card">
             <div className="card-header">
               <h3>Photos</h3>
-              <p className="text-muted small-text">Upload photos (max 10) — previews only</p>
+              <p className="text-muted small-text">Upload photos (max {MAX_IMAGES}) — stored in cloud</p>
             </div>
             <div className="card-content">
               <div className="photo-upload-area">
                 <span className="icon upload-icon"><CloudIcon size={48} /></span>
-                <p>Drag and drop photos here or click to browse</p>
-                <input type="file" id="imageUpload" multiple accept="image/*"
-                  onChange={handleImageUpload}
-                  style={{ display: 'none' }} />
-                <label htmlFor="imageUpload" className="button button-secondary">Select Photos</label>
+                {uploadingImages ? (
+                  <>
+                    <p>Uploading images... {Math.round(uploadProgress)}%</p>
+                    <div className="upload-progress-bar">
+                      <div 
+                        className="upload-progress-fill" 
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p>Drag and drop photos here or click to browse</p>
+                    <input type="file" id="imageUpload" multiple accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImages}
+                      style={{ display: 'none' }} />
+                    <label htmlFor="imageUpload" className="button button-secondary">Select Photos</label>
+                  </>
+                )}
               </div>
 
               {uploadedImages.length > 0 && (

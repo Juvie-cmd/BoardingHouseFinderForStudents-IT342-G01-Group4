@@ -39,10 +39,17 @@ public class ListingService {
     public Listing create(ListingRequest req, User landlord) {
         System.out.println("Creating listing for landlord ID: " + landlord.getId());
 
+        // Convert imageList to comma-separated string for storage
+        // Note: URLs from Supabase Storage don't contain commas, so comma is safe as delimiter
+        String imageListStr = req.getImageList() != null && !req.getImageList().isEmpty()
+                ? String.join(",", req.getImageList())
+                : "";
+
         Listing listing = Listing.builder()
                 .title(req.getTitle())
                 .description(req.getDescription())
                 .image(req.getImage())
+                .imageList(imageListStr)
                 .location(req.getLocation())
                 .nearbySchools(req.getNearbySchools())
                 .distance(req.getDistance())
@@ -70,6 +77,12 @@ public class ListingService {
         existing.setTitle(req.getTitle());
         existing.setDescription(req.getDescription());
         existing.setImage(req.getImage());
+        
+        // Update imageList if provided
+        if (req.getImageList() != null) {
+            existing.setImageList(String.join(",", req.getImageList()));
+        }
+        
         existing.setLocation(req.getLocation());
         existing.setNearbySchools(req.getNearbySchools());
         existing.setDistance(req.getDistance());
@@ -114,8 +127,18 @@ public class ListingService {
         r.setTitle(l.getTitle());
         r.setDescription(l.getDescription());
         r.setImage(l.getImage());
-        // imageList is not persisted as array in your entity; controller/frontend uses previews.
-        r.setImageList(null);
+        
+        // Parse imageList from comma-separated string
+        if (l.getImageList() != null && !l.getImageList().isBlank()) {
+            List<String> images = Arrays.stream(l.getImageList().split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
+            r.setImageList(images);
+        } else {
+            r.setImageList(List.of());
+        }
+        
         r.setLocation(l.getLocation());
         r.setPrice(l.getPrice());
         r.setRoomType(l.getRoomType());
