@@ -33,6 +33,9 @@ public class Listing {
     private String image;
 
     @Column(columnDefinition = "TEXT")
+    private String imageList;
+
+    @Column(columnDefinition = "TEXT")
     private String location;
 
     @Column(columnDefinition = "TEXT")
