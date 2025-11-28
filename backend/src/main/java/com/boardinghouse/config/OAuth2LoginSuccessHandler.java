@@ -73,7 +73,10 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String token = jwtService.generateToken(user);
 
         // Get the first allowed origin for redirect (frontend URL)
-        String frontendUrl = allowedOrigins.split(",")[0].trim();
+        String frontendUrl = "http://localhost:5173"; // Default fallback
+        if (allowedOrigins != null && !allowedOrigins.trim().isEmpty()) {
+            frontendUrl = allowedOrigins.split(",")[0].trim();
+        }
 
         // Redirect with token and user info
         String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/login")
