@@ -3,6 +3,7 @@ package com.boardinghouse.service;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,8 @@ import java.util.Map;
 
 /**
  * Service for geocoding operations using Nominatim (OpenStreetMap)
+ * Note: For production use, consider implementing rate limiting and caching
+ * to comply with Nominatim's usage policy.
  */
 @Service
 @Slf4j
@@ -27,9 +30,10 @@ public class GeocodingService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    public GeocodingService() {
+    @Autowired
+    public GeocodingService(ObjectMapper objectMapper) {
         this.restTemplate = new RestTemplate();
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper;
     }
 
     /**
