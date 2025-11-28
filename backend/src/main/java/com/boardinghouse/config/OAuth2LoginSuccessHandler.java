@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -25,6 +26,9 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+
+    @Value("${app.cors.allowed-origins:http://localhost:5173}")
+    private String allowedOrigins;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -68,8 +72,14 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         // Generate JWT
         String token = jwtService.generateToken(user);
 
+        // Get the first allowed origin for redirect (frontend URL)
+        String frontendUrl = "http://localhost:5173"; // Default fallback
+        if (allowedOrigins != null && !allowedOrigins.trim().isEmpty()) {
+            frontendUrl = allowedOrigins.split(",")[0].trim();
+        }
+
         // Redirect with token and user info
-        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:5173/login")
+        String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/login")
                 .queryParam("token", token)
                 .queryParam("id", user.getId())
                 .queryParam("email", user.getEmail())

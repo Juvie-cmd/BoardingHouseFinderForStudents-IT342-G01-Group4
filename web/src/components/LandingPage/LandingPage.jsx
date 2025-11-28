@@ -124,7 +124,7 @@ export function LandingPage() {
             <a href="#testimonials" onClick={() => setMobileMenuOpen(false)}>Testimonials</a>
              {/* 5. Use the handler */}
             <button className="button button-secondary button-full-width" onClick={goToLogin}>Log In</button>
-            <button className="button button-primary button-full-width" onClick={goToLogin}>Sign Up Free</button>
+            <button className="button button-primary button-full-width" onClick={goToRegister}>Sign Up Free</button>
           </div>
         )}
       </nav>
