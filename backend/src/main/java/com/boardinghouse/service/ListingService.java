@@ -22,14 +22,18 @@ public class ListingService {
         return listingRepository.findAll();
     }
 
+    public List<Listing> getApproved() {
+        return listingRepository.findByStatus(Listing.ListingStatus.APPROVED);
+    }
+
     public Listing getById(Long id) {
         return listingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Listing not found"));
     }
 
     public List<Listing> search(String q) {
-        if (q == null || q.isBlank()) return getAll();
-        return listingRepository.findByLocationContainingIgnoreCase(q);
+        if (q == null || q.isBlank()) return getApproved();
+        return listingRepository.findByStatusAndLocationContainingIgnoreCase(Listing.ListingStatus.APPROVED, q);
     }
 
     public Listing create(ListingRequest req, User landlord) {
@@ -52,6 +56,7 @@ public class ListingService {
                 .latitude(req.getLatitude())
                 .longitude(req.getLongitude())
                 .landlord(landlord)
+                .status(Listing.ListingStatus.PENDING) // New listings start as PENDING
                 .build();
 
         Listing saved = listingRepository.save(listing);
@@ -77,6 +82,12 @@ public class ListingService {
         existing.setWebsite(req.getWebsite());
         existing.setLatitude(req.getLatitude());
         existing.setLongitude(req.getLongitude());
+        
+        // When landlord updates a rejected listing, reset to PENDING for re-review
+        if (existing.getStatus() == Listing.ListingStatus.REJECTED) {
+            existing.setStatus(Listing.ListingStatus.PENDING);
+            existing.setRejectionNotes(null);
+        }
 
         return listingRepository.save(existing);
     }
@@ -116,6 +127,8 @@ public class ListingService {
         r.setNearbySchools(l.getNearbySchools());
         r.setDistance(l.getDistance());
         r.setWebsite(l.getWebsite());
+        r.setStatus(l.getStatus() != null ? l.getStatus().name() : "PENDING");
+        r.setRejectionNotes(l.getRejectionNotes());
 
         if (l.getAmenities() != null && !l.getAmenities().isBlank()) {
             List<String> am = Arrays.stream(l.getAmenities().split(","))
@@ -125,6 +138,16 @@ public class ListingService {
             r.setAmenities(am);
         } else {
             r.setAmenities(List.of());
+        }
+        
+        // Add landlord info
+        if (l.getLandlord() != null) {
+            ListingResponse.LandlordInfo landlordInfo = new ListingResponse.LandlordInfo();
+            landlordInfo.setId(l.getLandlord().getId());
+            landlordInfo.setName(l.getLandlord().getName());
+            landlordInfo.setEmail(l.getLandlord().getEmail());
+            landlordInfo.setPhone(l.getLandlord().getPhone());
+            r.setLandlord(landlordInfo);
         }
 
         return r;

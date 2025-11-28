@@ -7,7 +7,7 @@ import './styles/AdminDashboard.css';
 
 const ImageWithFallback = ({ src, alt, className }) => {
   const fallbackSrc = 'https://placehold.co/400x300/e2e8f0/64748b?text=No+Image';
-  const isInvalidSrc = ! src || src.startsWith('blob:') || src === '';
+  const isInvalidSrc = !src || src.startsWith('blob:') || src === '';
   
   return (
     <img 
@@ -26,6 +26,8 @@ export function AdminDashboard() {
   const [editingUser, setEditingUser] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [deleteListingConfirm, setDeleteListingConfirm] = useState(null);
+  const [rejectingListing, setRejectingListing] = useState(null);
+  const [rejectionNotes, setRejectionNotes] = useState('');
   const [editForm, setEditForm] = useState({ name: '', email: '', role: '', active: true });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -40,13 +42,13 @@ export function AdminDashboard() {
       API.get('/admin/listings')
     ])
       .then(([usersRes, listingsRes]) => {
-        console.log('Users loaded:', usersRes. data);
+        console.log('Users loaded:', usersRes.data);
         console.log('Listings loaded:', listingsRes.data);
         setUsers(usersRes.data || []);
         
         const normalized = (listingsRes.data || []).map(l => {
-          if (typeof l. amenities === 'string') {
-            l.amenities = l.amenities ?  l.amenities. split(','). map(s => s.trim()) : [];
+          if (typeof l.amenities === 'string') {
+            l.amenities = l.amenities ? l.amenities.split(',').map(s => s.trim()) : [];
           }
           return l;
         });
@@ -54,7 +56,7 @@ export function AdminDashboard() {
       })
       .catch((err) => {
         console.error('Failed to load admin data', err);
-        setError('Failed to load data.  Make sure you are logged in as admin.');
+        setError('Failed to load data. Make sure you are logged in as admin.');
       })
       .finally(() => setLoading(false));
   };
@@ -65,11 +67,12 @@ export function AdminDashboard() {
 
   const stats = {
     totalUsers: users.length,
-    totalStudents: users.filter(u => u. role && u.role.toLowerCase() === 'student').length,
-    totalLandlords: users.filter(u => u.role && u.role. toLowerCase() === 'landlord').length,
+    totalStudents: users.filter(u => u.role && u.role.toLowerCase() === 'student').length,
+    totalLandlords: users.filter(u => u.role && u.role.toLowerCase() === 'landlord').length,
     totalListings: listings.length,
-    activeListings: listings. filter(l => l.available).length,
-    pendingListings: listings.filter(l => !l.available).length,
+    activeListings: listings.filter(l => l.status === 'APPROVED').length,
+    pendingListings: listings.filter(l => l.status === 'PENDING').length,
+    rejectedListings: listings.filter(l => l.status === 'REJECTED').length,
   };
 
   // User management functions
@@ -118,31 +121,43 @@ export function AdminDashboard() {
   const approveListing = (id) => {
     API.put(`/admin/listing/${id}/approve`)
       .then(() => {
-        setListings(listings. map(l => l.id === id ?  { ...l, available: true } : l));
-        alert('Listing approved successfully! ');
+        setListings(listings.map(l => l.id === id ? { ...l, status: 'APPROVED', available: true, rejectionNotes: null } : l));
+        alert('Listing approved successfully!');
       })
       .catch(err => {
         console.error('Approve failed', err);
-        alert('Approve failed: ' + (err.response?.data?.message || err. message));
+        alert('Approve failed: ' + (err.response?.data?.message || err.message));
       });
   };
 
-  const rejectListing = (id) => {
-    API. put(`/admin/listing/${id}/reject`)
+  const handleRejectListing = (listing) => {
+    setRejectingListing(listing);
+    setRejectionNotes('');
+  };
+
+  const confirmRejectListing = () => {
+    API.put(`/admin/listing/${rejectingListing.id}/reject`, { rejectionNotes })
       .then(() => {
-        setListings(listings.map(l => l.id === id ? { ...l, available: false } : l));
-        alert('Listing rejected successfully!');
+        setListings(listings.map(l => l.id === rejectingListing.id ? { ...l, status: 'REJECTED', available: false, rejectionNotes } : l));
+        setRejectingListing(null);
+        setRejectionNotes('');
+        alert('Listing rejected. Landlord will be notified with your notes.');
       })
       .catch(err => {
         console.error('Reject failed', err);
-        alert('Reject failed: ' + (err.response?. data?.message || err.message));
+        alert('Reject failed: ' + (err.response?.data?.message || err.message));
       });
+  };
+
+  const cancelRejectListing = () => {
+    setRejectingListing(null);
+    setRejectionNotes('');
   };
 
   const handleDeleteListing = (listing) => setDeleteListingConfirm(listing);
   
   const confirmDeleteListing = () => {
-    API.delete(`/admin/listing/${deleteListingConfirm. id}`)
+    API.delete(`/admin/listing/${deleteListingConfirm.id}`)
       .then(() => {
         setListings(listings.filter(l => l.id !== deleteListingConfirm.id));
         setDeleteListingConfirm(null);
@@ -150,13 +165,27 @@ export function AdminDashboard() {
       })
       .catch(err => {
         console.error('Delete listing failed', err);
-        alert('Delete failed: ' + (err.response?.data?. message || err.message));
+        alert('Delete failed: ' + (err.response?.data?.message || err.message));
       });
   };
   
   const cancelDeleteListing = () => setDeleteListingConfirm(null);
 
   const getUserStatusClass = (status) => status === 'Active' ? 'badge-success' : 'badge-danger';
+
+  const getListingStatusClass = (status) => {
+    if (status === 'APPROVED') return 'badge-success';
+    if (status === 'PENDING') return 'badge-warning';
+    if (status === 'REJECTED') return 'badge-danger';
+    return 'badge-secondary';
+  };
+
+  const getListingStatusLabel = (status) => {
+    if (status === 'APPROVED') return 'Approved';
+    if (status === 'PENDING') return 'Pending';
+    if (status === 'REJECTED') return 'Rejected';
+    return status || 'Unknown';
+  };
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
@@ -165,9 +194,10 @@ export function AdminDashboard() {
   ];
 
   const performanceItems = [
-    { icon: <HomeIcon size={20} />, label: 'Active Listings', value: stats.activeListings, iconColor: 'green' },
-    { icon: <CloseIcon size={20} />, label: 'Pending/Rejected', value: stats.pendingListings, iconColor: 'red' },
-    { icon: <GraduationIcon size={20} />, label: 'Students', value: stats. totalStudents, iconColor: 'blue' },
+    { icon: <HomeIcon size={20} />, label: 'Approved', value: stats.activeListings, iconColor: 'green' },
+    { icon: <CloseIcon size={20} />, label: 'Pending', value: stats.pendingListings, iconColor: 'yellow' },
+    { icon: <CloseIcon size={20} />, label: 'Rejected', value: stats.rejectedListings, iconColor: 'red' },
+    { icon: <GraduationIcon size={20} />, label: 'Students', value: stats.totalStudents, iconColor: 'blue' },
     { icon: <BuildingIcon size={20} />, label: 'Landlords', value: stats.totalLandlords, iconColor: 'purple' },
   ];
 
@@ -265,14 +295,14 @@ export function AdminDashboard() {
                       value={stats.totalListings} 
                       icon={<HomeIcon size={24} />} 
                       iconColor="green" 
-                      description={`${stats.activeListings} active, ${stats. pendingListings} pending`}
+                      description={`${stats.activeListings} approved, ${stats.pendingListings} pending, ${stats.rejectedListings} rejected`}
                     />
                     <StatCard 
-                      title="Active Listings" 
+                      title="Approved Listings" 
                       value={stats.activeListings} 
                       icon={<CheckIcon size={24} />} 
                       iconColor="purple" 
-                      description="Approved and visible"
+                      description="Visible to students"
                     />
                   </div>
 
@@ -416,7 +446,7 @@ export function AdminDashboard() {
                     <div className="card-header">
                       <h3>Listings Management</h3>
                       <p className="text-muted small-text">
-                        {listings.length} total listings • {stats.activeListings} active • {stats.pendingListings} pending/rejected
+                        {listings.length} total listings • {stats.activeListings} approved • {stats.pendingListings} pending • {stats.rejectedListings} rejected
                       </p>
                     </div>
                     <div className="card-content">
@@ -436,8 +466,8 @@ export function AdminDashboard() {
                                       {listing.location}
                                     </p>
                                   </div>
-                                  <span className={`badge ${listing.available ? 'badge-success' : 'badge-warning'}`}>
-                                    {listing. available ? 'Active' : 'Pending/Rejected'}
+                                  <span className={`badge ${getListingStatusClass(listing.status)}`}>
+                                    {getListingStatusLabel(listing.status)}
                                   </span>
                                 </div>
                                 <div className="admin-listing-info">
@@ -451,6 +481,11 @@ export function AdminDashboard() {
                                   <span>•</span>
                                   <span>{listing.roomType || 'N/A'}</span>
                                 </div>
+                                {listing.status === 'REJECTED' && listing.rejectionNotes && (
+                                  <div className="rejection-notes" style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '4px', fontSize: '0.875rem', color: '#dc2626' }}>
+                                    <strong>Rejection Notes:</strong> {listing.rejectionNotes}
+                                  </div>
+                                )}
                                 {/* ALL BUTTONS ALWAYS VISIBLE AND FUNCTIONAL */}
                                 <div className="admin-listing-actions">
                                   <button 
@@ -461,7 +496,7 @@ export function AdminDashboard() {
                                   </button>
                                   <button 
                                     className="button button-warning button-small" 
-                                    onClick={() => rejectListing(listing.id)}
+                                    onClick={() => handleRejectListing(listing)}
                                   >
                                     <span className="icon"><CloseIcon size={16} /></span> Reject
                                   </button>
@@ -487,16 +522,56 @@ export function AdminDashboard() {
                   {/* Delete Listing Confirmation Modal */}
                   {deleteListingConfirm && (
                     <div className="modal-overlay" onClick={cancelDeleteListing}>
-                      <div className="modal-content" onClick={(e) => e. stopPropagation()}>
+                      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header"><h3>Confirm Delete Listing</h3></div>
                         <div className="modal-body">
-                          <p>Are you sure you want to delete listing <strong>{deleteListingConfirm.title}</strong>? </p>
-                          <p className="text-muted" style={{ marginTop: '0.5rem' }}>This action cannot be undone.</p>
+                          <p>Are you sure you want to delete listing <strong>{deleteListingConfirm.title}</strong>?</p>
+                          <p className="text-muted" style={{ marginTop: '0.5rem' }}>This action cannot be undone. The listing will be completely removed from the system.</p>
                         </div>
                         <div className="modal-actions">
                           <button className="button button-secondary" onClick={cancelDeleteListing}>Cancel</button>
                           <button className="button button-danger" onClick={confirmDeleteListing}>
                             <span className="icon"><TrashIcon size={16} /></span> Delete Listing
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Reject Listing Modal with Notes */}
+                  {rejectingListing && (
+                    <div className="modal-overlay" onClick={cancelRejectListing}>
+                      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                          <h3>Reject Listing</h3>
+                          <button className="button button-link" onClick={cancelRejectListing}>
+                            <CloseIcon size={20} />
+                          </button>
+                        </div>
+                        <div className="modal-body">
+                          <p>You are rejecting: <strong>{rejectingListing.title}</strong></p>
+                          <p className="text-muted" style={{ marginTop: '0.5rem', marginBottom: '1rem' }}>
+                            Please provide a reason for rejection. The landlord will be notified and can edit and resubmit.
+                          </p>
+                          <div className="form-group">
+                            <label>Rejection Notes <span style={{ color: '#dc2626' }}>*</span></label>
+                            <textarea
+                              value={rejectionNotes}
+                              onChange={(e) => setRejectionNotes(e.target.value)}
+                              className="textarea"
+                              rows={4}
+                              placeholder="Explain why this listing is being rejected..."
+                            />
+                          </div>
+                        </div>
+                        <div className="modal-actions">
+                          <button className="button button-secondary" onClick={cancelRejectListing}>Cancel</button>
+                          <button 
+                            className="button button-warning" 
+                            onClick={confirmRejectListing}
+                            disabled={!rejectionNotes.trim()}
+                          >
+                            <span className="icon"><CloseIcon size={16} /></span> Reject Listing
                           </button>
                         </div>
                       </div>

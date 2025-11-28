@@ -8,4 +8,6 @@ import java.util.List;
 public interface ListingRepository extends JpaRepository<Listing, Long> {
     List<Listing> findByLocationContainingIgnoreCase(String location);
     List<Listing> findByLandlord_Id(Long landlordId);
+    List<Listing> findByStatus(Listing.ListingStatus status);
+    List<Listing> findByStatusAndLocationContainingIgnoreCase(Listing.ListingStatus status, String location);
 }
