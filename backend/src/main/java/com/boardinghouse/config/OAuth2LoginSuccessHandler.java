@@ -72,11 +72,11 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         // Generate JWT
         String token = jwtService. generateToken(user);
 
-        String frontendUrl = "http://localhost:5173"; 
-        if (allowedOrigins != null && ! allowedOrigins. trim().isEmpty()) {
-            frontendUrl = allowedOrigins.split(",")[0].trim();
+        String frontendUrl = System.getenv("FRONTEND_URL");
+        if (frontendUrl == null || frontendUrl.trim(). isEmpty()) {
+            frontendUrl = "http://localhost:5173";
         }
-
+        
         String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/google-callback")
                 .queryParam("token", token)
                 .queryParam("id", user.getId())
