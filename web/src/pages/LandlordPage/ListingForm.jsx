@@ -11,6 +11,9 @@ const toast = {
   error: (message) => alert(`Error: ${message}`),
 };
 
+// Maximum number of images allowed per listing
+const MAX_IMAGES = 10;
+
 export function ListingForm({ listingId, onBack }) {
   const isEditing = !!listingId;
 
@@ -59,7 +62,7 @@ export function ListingForm({ listingId, onBack }) {
           longitude: l.longitude || ''
         });
 
-        setUploadedImages(imgs.slice(0, 10));
+        setUploadedImages(imgs.slice(0, MAX_IMAGES));
       })
       .catch(err => {
         console.error('Failed to load listing for edit', err);
@@ -82,10 +85,10 @@ export function ListingForm({ listingId, onBack }) {
     
     if (files.length === 0) return;
     
-    // Check if we would exceed the 10 image limit
+    // Check if we would exceed the image limit
     const totalImages = uploadedImages.length + files.length;
-    if (totalImages > 10) {
-      toast.error(`You can only upload up to 10 images. Currently have ${uploadedImages.length}.`);
+    if (totalImages > MAX_IMAGES) {
+      toast.error(`You can only upload up to ${MAX_IMAGES} images. Currently have ${uploadedImages.length}.`);
       return;
     }
 
@@ -111,7 +114,7 @@ export function ListingForm({ listingId, onBack }) {
       }
 
       if (urls.length > 0) {
-        const updated = [...uploadedImages, ...urls].slice(0, 10);
+        const updated = [...uploadedImages, ...urls].slice(0, MAX_IMAGES);
         setUploadedImages(updated);
 
         // Update formData with the Supabase URLs
@@ -402,7 +405,7 @@ export function ListingForm({ listingId, onBack }) {
           <div className="card form-card">
             <div className="card-header">
               <h3>Photos</h3>
-              <p className="text-muted small-text">Upload photos (max 10) — stored in cloud</p>
+              <p className="text-muted small-text">Upload photos (max {MAX_IMAGES}) — stored in cloud</p>
             </div>
             <div className="card-content">
               <div className="photo-upload-area">

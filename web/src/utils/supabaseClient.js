@@ -3,16 +3,34 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// In production mode, warn if Supabase is not configured
+const isProduction = import.meta.env.PROD;
+
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn(
-    'Supabase environment variables are not set. Image uploads will not work. ' +
-    'Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.'
-  );
+  const message = 'Supabase environment variables are not set. Image uploads will not work. ' +
+    'Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.';
+  
+  if (isProduction) {
+    console.error(message);
+  } else {
+    console.warn(message);
+  }
 }
 
 export const supabase = supabaseUrl && supabaseAnonKey 
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
+
+/**
+ * Generate a unique file name using crypto.randomUUID for better collision resistance
+ * @param {string} originalName - Original file name
+ * @returns {string} Unique file name
+ */
+function generateUniqueFileName(originalName) {
+  const fileExt = originalName.split('.').pop();
+  const uuid = crypto.randomUUID();
+  return `${uuid}.${fileExt}`;
+}
 
 /**
  * Upload a file to Supabase Storage
@@ -29,9 +47,8 @@ export async function uploadImage(file, bucket = 'listing-images') {
   }
 
   try {
-    // Generate a unique file name to avoid conflicts
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+    // Generate a unique file name using UUID for collision resistance
+    const fileName = generateUniqueFileName(file.name);
     const filePath = `listings/${fileName}`;
 
     // Upload the file

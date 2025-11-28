@@ -40,6 +40,7 @@ public class ListingService {
         System.out.println("Creating listing for landlord ID: " + landlord.getId());
 
         // Convert imageList to comma-separated string for storage
+        // Note: URLs from Supabase Storage don't contain commas, so comma is safe as delimiter
         String imageListStr = req.getImageList() != null && !req.getImageList().isEmpty()
                 ? String.join(",", req.getImageList())
                 : "";
