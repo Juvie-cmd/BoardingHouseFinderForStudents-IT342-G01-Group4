@@ -1,0 +1,87 @@
+/* src/components/Shared/styles/LocationPicker.css */
+
+.location-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.location-picker-search {
+  width: 100%;
+}
+
+.location-picker-map {
+  position: relative;
+}
+
+.location-picker-map .leaflet-container {
+  border: 1px solid #d1d5db;
+  cursor: crosshair;
+}
+
+.location-picker-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.location-picker-coords {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.coords-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.coords-label {
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.coords-value {
+  font-size: 13px;
+  color: #374151;
+  font-family: monospace;
+}
+
+/* Custom marker style */
+.location-picker-marker {
+  background: transparent;
+  border: none;
+}
+
+/* Button size variants */
+.button-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .location-picker-map .leaflet-container {
+    height: 250px !important;
+  }
+  
+  .location-picker-coords {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .location-picker-coords .button {
+    width: 100%;
+  }
+}
