@@ -16,11 +16,14 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
   // Stats placeholder — will compute from data
   const stats = {
     totalListings: myListings.length,
-    activeListings: myListings.filter(l => l.available).length,
-    totalInquiries: recentInquiries. length,
+    approvedListings: myListings.filter(l => l.status === 'APPROVED').length,
+    pendingListings: myListings.filter(l => l.status === 'PENDING').length,
+    rejectedListings: myListings.filter(l => l.status === 'REJECTED').length,
+    totalInquiries: recentInquiries.length,
+    newInquiries: recentInquiries.filter(i => i.status === 'NEW').length,
     monthlyRevenue: myListings.reduce((sum, l) => sum + (l.price || 0), 0) || 0,
     viewsThisMonth: 0,
-    averageRating: myListings.length ?  (myListings.reduce((s, l) => s + (l.rating || 0), 0) / myListings.length). toFixed(1) : 0,
+    averageRating: myListings.length ? (myListings.reduce((s, l) => s + (l.rating || 0), 0) / myListings.length).toFixed(1) : 0,
   };
 
   const fetchData = () => {
@@ -29,15 +32,16 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
     
     Promise.all([
       API.get("/landlord/listings"),
-      API.get("/landlord/inquiries"). catch(() => ({ data: [] }))
+      API.get("/landlord/inquiries").catch(() => ({ data: [] }))
     ])
       .then(([listRes, inqRes]) => {
-        console.log("Listings response:", listRes. data);
+        console.log("Listings response:", listRes.data);
+        console.log("Inquiries response:", inqRes.data);
         
         // ensure amenities are arrays
         const normalized = (listRes.data || []).map(l => {
           if (typeof l.amenities === 'string') {
-            l.amenities = l.amenities ?  l.amenities.split(','). map(s => s.trim()) : [];
+            l.amenities = l.amenities ? l.amenities.split(',').map(s => s.trim()) : [];
           }
           return l;
         });
@@ -49,7 +53,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
       })
       .catch(err => {
         console.error('Failed to load landlord data:', err);
-        console.error('Error response:', err.response?. data);
+        console.error('Error response:', err.response?.data);
         setError(err.response?.data?.message || 'Failed to load listings');
       })
       .finally(() => setLoading(false));
@@ -71,17 +75,32 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
       })
       .catch(err => {
         console.error('Delete listing failed', err);
-        alert('Delete failed: ' + (err.response?. data?. message || err.message));
+        alert('Delete failed: ' + (err.response?.data?.message || err.message));
       });
   };
 
   const cancelDeleteListing = () => setDeleteConfirm(null);
 
   const getInquiryStatusClass = (status) => {
-    if (status === 'New') return 'badge-primary';
-    if (status === 'Replied') return 'badge-secondary';
-    if (status === 'Scheduled') return 'badge-outline';
+    if (status === 'NEW') return 'badge-primary';
+    if (status === 'REPLIED') return 'badge-secondary';
+    if (status === 'SCHEDULED') return 'badge-success';
+    if (status === 'CLOSED') return 'badge-outline';
     return 'badge-secondary';
+  };
+
+  const getListingStatusClass = (status) => {
+    if (status === 'APPROVED') return 'badge-success';
+    if (status === 'PENDING') return 'badge-warning';
+    if (status === 'REJECTED') return 'badge-danger';
+    return 'badge-secondary';
+  };
+
+  const getListingStatusLabel = (status) => {
+    if (status === 'APPROVED') return 'Approved';
+    if (status === 'PENDING') return 'Pending Approval';
+    if (status === 'REJECTED') return 'Rejected';
+    return status || 'Unknown';
   };
 
   const tabs = [
@@ -92,16 +111,17 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
   ];
 
   const performanceItems = [
-    { icon: <EyeIcon size={20} />, label: 'Total Views', value: stats. viewsThisMonth, iconColor: 'blue' },
+    { icon: <EyeIcon size={20} />, label: 'Total Views', value: stats.viewsThisMonth, iconColor: 'blue' },
     { icon: <MessageIcon size={20} />, label: 'Inquiries', value: stats.totalInquiries, iconColor: 'purple' },
     { icon: <ChartIcon size={20} />, label: 'Conversion Rate', value: '7.2%', iconColor: 'green' },
     { icon: <StarIcon size={20} fill="#FFD700" color="#FFD700" />, label: 'Avg Rating', value: stats.averageRating, iconColor: 'yellow' },
   ];
 
   const inquiryColumns = [
-    { header: 'Student', field: 'student', render: (i) => i.student?. name || 'Student' },
-    { header: 'Listing', field: 'listing', render: (i) => i. listing?.title || 'Listing' },
-    { header: 'Date', field: 'date', render: (i) => i. dateSent || i.date || '-' },
+    { header: 'Student', field: 'student', render: (i) => i.student?.name || 'Student' },
+    { header: 'Listing', field: 'listing', render: (i) => i.listing?.title || 'Listing' },
+    { header: 'Type', field: 'type', render: (i) => i.type === 'VISIT_REQUEST' ? 'Visit Request' : 'Message' },
+    { header: 'Date', field: 'date', render: (i) => i.dateSent || i.createdAt || '-' },
     {
       header: 'Status',
       field: 'status',
@@ -155,8 +175,8 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
         return (
           <div className="overview-content">
             <div className="stats-grid">
-              <StatCard title="Total Listings" value={stats.totalListings} icon={<HomeIcon size={24} />} iconColor="blue" description={`${stats.activeListings} active`} />
-              <StatCard title="Total Inquiries" value={stats.totalInquiries} icon={<MessageIcon size={24} />} iconColor="purple" description={`${recentInquiries. filter(i => i.status === 'New').length} new`} />
+              <StatCard title="Total Listings" value={stats.totalListings} icon={<HomeIcon size={24} />} iconColor="blue" description={`${stats.approvedListings} approved, ${stats.pendingListings} pending, ${stats.rejectedListings} rejected`} />
+              <StatCard title="Total Inquiries" value={stats.totalInquiries} icon={<MessageIcon size={24} />} iconColor="purple" description={`${stats.newInquiries} new`} />
               <StatCard title="Average Rating" value={stats.averageRating} icon={<StarIcon size={24} fill="#FFD700" color="#FFD700" />} iconColor="yellow" description={`${myListings.reduce((sum, l) => sum + (l.reviews || 0), 0)} reviews`} />
             </div>
 
@@ -164,22 +184,30 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
               <div className="card">
                 <div className="card-header">
                   <h3>Recent Inquiries</h3>
-                  <p className="text-muted small-text">Latest messages</p>
+                  <p className="text-muted small-text">Latest messages and visit requests</p>
                 </div>
                 <div className="card-content">
                   {recentInquiries.length > 0 ? (
                     <div className="inquiries-list">
-                      {recentInquiries.map((inquiry) => (
+                      {recentInquiries.slice(0, 5).map((inquiry) => (
                         <div key={inquiry.id} className="inquiry-item">
                           <div className="inquiry-item-header">
                             <div className="inquiry-item-info">
                               <p className="inquiry-student">{inquiry.student?.name || 'Student'}</p>
                               <p className="inquiry-listing">{inquiry.listing?.title || 'Listing'}</p>
+                              <p className="inquiry-type" style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                                {inquiry.type === 'VISIT_REQUEST' ? '📅 Visit Request' : '💬 Message'}
+                              </p>
                             </div>
-                            <span className={`badge ${getInquiryStatusClass(inquiry.status)}`}>{inquiry. status}</span>
+                            <span className={`badge ${getInquiryStatusClass(inquiry.status)}`}>{inquiry.status}</span>
                           </div>
-                          <p className="inquiry-message">{inquiry.message}</p>
-                          <p className="inquiry-date">{inquiry.dateSent || inquiry. date}</p>
+                          <p className="inquiry-message">{inquiry.message || inquiry.notes}</p>
+                          {inquiry.type === 'VISIT_REQUEST' && inquiry.visitDate && (
+                            <p className="inquiry-visit-info" style={{ fontSize: '0.875rem', color: '#3b82f6' }}>
+                              Requested: {inquiry.visitDate} {inquiry.visitTime && `at ${inquiry.visitTime}`}
+                            </p>
+                          )}
+                          <p className="inquiry-date">{inquiry.dateSent || inquiry.createdAt}</p>
                         </div>
                       ))}
                     </div>
@@ -222,10 +250,26 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                               <span className="icon"><LocationIcon size={16} /></span> {listing.location}
                             </div>
                           </div>
-                          <span className={`badge ${listing.available ? 'badge-success' : 'badge-warning'}`}>
-                            {listing.available ? 'Available' : 'Pending Approval'}
+                          <span className={`badge ${getListingStatusClass(listing.status)}`}>
+                            {getListingStatusLabel(listing.status)}
                           </span>
                         </div>
+                        {listing.status === 'REJECTED' && listing.rejectionNotes && (
+                          <div className="rejection-notes" style={{ marginTop: '0.5rem', padding: '0.75rem', background: '#fef2f2', borderRadius: '6px', border: '1px solid #fecaca' }}>
+                            <p style={{ fontSize: '0.875rem', fontWeight: '600', color: '#dc2626', marginBottom: '0.25rem' }}>
+                              ⚠️ Rejection Reason:
+                            </p>
+                            <p style={{ fontSize: '0.875rem', color: '#7f1d1d' }}>{listing.rejectionNotes}</p>
+                            <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                              Please edit your listing to address these issues and resubmit for approval.
+                            </p>
+                          </div>
+                        )}
+                        {listing.status === 'PENDING' && (
+                          <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#fef3c7', borderRadius: '4px', fontSize: '0.875rem', color: '#92400e' }}>
+                            ⏳ This listing is awaiting admin approval. It will be visible to students once approved.
+                          </div>
+                        )}
                         <div className="listing-item-stats">
                           <div>
                             <p className="stat-label">Price</p>
@@ -246,7 +290,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                         </div>
                         <div className="listing-item-actions">
                           <button className="button button-secondary button-small" onClick={() => onEditListing(listing.id)}>
-                            <span className="icon"><EditIcon size={16} /></span> Edit
+                            <span className="icon"><EditIcon size={16} /></span> {listing.status === 'REJECTED' ? 'Edit & Resubmit' : 'Edit'}
                           </button>
                           <button className="button button-secondary button-small">
                             <span className="icon"><EyeIcon size={16} /></span> View
@@ -333,10 +377,10 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                 <div className="card-content">
                   <div className="stat-value-main">
                     {myListings.length > 0 
-                      ? Math.round((stats. activeListings / myListings.length) * 100) 
+                      ? Math.round((stats.approvedListings / myListings.length) * 100) 
                       : 0}%
                   </div>
-                  <p className="stat-label">{stats.activeListings} of {myListings.length} available</p>
+                  <p className="stat-label">{stats.approvedListings} of {myListings.length} approved</p>
                 </div>
               </div>
             </div>

@@ -64,6 +64,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers("/api/auth/**", "/oauth2/**", "/login**", "/error").permitAll()
+                .requestMatchers("/api/geocoding/**").permitAll() // Geocoding is public
 
                 // Role-based API access
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")       // 🔐 Admin only

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import API from "../../api/api";
 import { ImageWithFallback } from "../../components/Shared/ImageWithFallback";
+import { LocationSearchInput } from "../../components/Shared/LocationSearchInput";
+import { ListingsMap } from "../../components/Shared/ListingsMap";
 import {
   LocationIcon,
   MoneyIcon,
@@ -18,9 +20,12 @@ export function StudentDashboard({ onViewDetails }) {
   const [filteredListings, setFilteredListings] = useState([]);
 
   const [location, setLocation] = useState("");
+  const [searchLocation, setSearchLocation] = useState(null); // {latitude, longitude}
+  const [distanceRadius, setDistanceRadius] = useState("any");
   const [budget, setBudget] = useState("any");
   const [roomType, setRoomType] = useState("any");
   const [searchTriggered, setSearchTriggered] = useState(false);
+  const [showMap, setShowMap] = useState(false);
 
   // ⭐ LOAD LISTINGS FROM BACKEND
   useEffect(() => {
@@ -51,11 +56,38 @@ export function StudentDashboard({ onViewDetails }) {
       .catch((err) => console.error("Error loading listings:", err));
   }, []);
 
+  // Calculate distance between two points (Haversine formula)
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
   // ⭐ FILTER FUNCTION
   const filterListings = () => {
     let filtered = [...listings];
 
-    if (location.trim()) {
+    // Distance-based location filter (when coordinates are available)
+    if (searchLocation && distanceRadius !== "any") {
+      const radiusKm = parseFloat(distanceRadius);
+      filtered = filtered.filter((l) => {
+        if (!l.latitude || !l.longitude) return false;
+        const distance = calculateDistance(
+          searchLocation.latitude, 
+          searchLocation.longitude,
+          l.latitude, 
+          l.longitude
+        );
+        return distance <= radiusKm;
+      });
+    } else if (location.trim() && !searchLocation) {
+      // Text-based location filter (fallback)
       filtered = filtered.filter(
         (l) =>
           l.location.toLowerCase().includes(location.toLowerCase()) ||
@@ -89,10 +121,26 @@ export function StudentDashboard({ onViewDetails }) {
 
   const handleClearSearch = () => {
     setLocation("");
+    setSearchLocation(null);
+    setDistanceRadius("any");
     setBudget("any");
     setRoomType("any");
     setSearchTriggered(false);
+    setShowMap(false);
     setFilteredListings(listings);
+  };
+
+  // Handle location selection from search
+  const handleLocationSelect = (locationData) => {
+    if (locationData) {
+      setSearchLocation({
+        latitude: locationData.latitude,
+        longitude: locationData.longitude
+      });
+      setLocation(locationData.address);
+    } else {
+      setSearchLocation(null);
+    }
   };
 
   return (
@@ -114,17 +162,29 @@ export function StudentDashboard({ onViewDetails }) {
               <form className="search-grid" onSubmit={handleSearch}>
                 <div className="search-grid-item" style={{ flexGrow: 2 }}>
                   <label className="form-label">Location</label>
-                  <div className="search-grid-item-icon-wrapper">
-                    <span className="icon">
-                      <LocationIcon size={18} />
-                    </span>
-                    <input
-                      placeholder="Enter an address or area"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      className="input input-with-icon"
-                    />
-                  </div>
+                  <LocationSearchInput
+                    value={location}
+                    onChange={setLocation}
+                    onLocationSelect={handleLocationSelect}
+                    placeholder="Search for an address or area..."
+                  />
+                </div>
+
+                <div className="search-grid-item">
+                  <label className="form-label">Distance Radius</label>
+                  <select
+                    className="select"
+                    value={distanceRadius}
+                    onChange={(e) => setDistanceRadius(e.target.value)}
+                    disabled={!searchLocation}
+                    title={!searchLocation ? "Select a location first to enable distance filtering" : ""}
+                  >
+                    <option value="any">Any Distance</option>
+                    <option value="1">Within 1 km</option>
+                    <option value="3">Within 3 km</option>
+                    <option value="5">Within 5 km</option>
+                    <option value="10">Within 10 km</option>
+                  </select>
                 </div>
 
                 <div className="search-grid-item">
@@ -159,19 +219,43 @@ export function StudentDashboard({ onViewDetails }) {
       <div className="featured-listings-section">
         <div className="container">
           <div className="section-header">
-            <h2>
-              {searchTriggered ? "Search Results" : "Featured Boarding Houses"}
-            </h2>
-            <p className="text-muted">
-              {searchTriggered
-                ? `Found ${filteredListings.length} ${
-                    filteredListings.length === 1
-                      ? "property"
-                      : "properties"
-                  }`
-                : "Popular choices among students"}
-            </p>
+            <div className="section-header-left">
+              <h2>
+                {searchTriggered ? "Search Results" : "Featured Boarding Houses"}
+              </h2>
+              <p className="text-muted">
+                {searchTriggered
+                  ? `Found ${filteredListings.length} ${
+                      filteredListings.length === 1
+                        ? "property"
+                        : "properties"
+                    }${searchLocation && distanceRadius !== "any" ? ` within ${distanceRadius} km` : ""}`
+                  : "Popular choices among students"}
+              </p>
+            </div>
+            <div className="section-header-right">
+              <button
+                type="button"
+                className={`button ${showMap ? 'button-primary' : 'button-secondary'}`}
+                onClick={() => setShowMap(!showMap)}
+              >
+                {showMap ? 'Hide Map' : 'Show Map'}
+              </button>
+            </div>
           </div>
+
+          {/* MAP VIEW */}
+          {showMap && (
+            <div className="listings-map-wrapper">
+              <ListingsMap
+                listings={filteredListings}
+                searchLocation={searchLocation}
+                searchRadius={distanceRadius !== "any" ? parseFloat(distanceRadius) : null}
+                onListingClick={onViewDetails}
+                height="400px"
+              />
+            </div>
+          )}
 
           {/* SHOW LISTINGS */}
           <div className="grid-3-col">

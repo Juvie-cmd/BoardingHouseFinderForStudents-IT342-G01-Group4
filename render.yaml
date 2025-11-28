@@ -1,0 +1,39 @@
+# Render Blueprint - Boarding House Finder
+# Deploy both frontend (static site) and backend (web service)
+
+services:
+  # Backend API (Spring Boot)
+  - type: web
+    name: boardinghouse-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: BACKEND_URL
+        sync: false
+    healthCheckPath: /api/auth/validate
+
+  # Frontend (React/Vite Static Site)
+  - type: web
+    name: boardinghouse-web
+    runtime: static
+    buildCommand: cd web && npm install && npm run build
+    staticPublishPath: ./web/dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

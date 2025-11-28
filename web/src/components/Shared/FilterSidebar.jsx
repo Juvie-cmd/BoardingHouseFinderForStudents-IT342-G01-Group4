@@ -62,7 +62,6 @@ export function FilterSidebar({ filters, setFilters, onClearAll }) {
     });
   };
 
-IS_LANDING_PAGE
   return (
     <div className="card filter-sidebar">
       <div className="filter-sidebar-header">

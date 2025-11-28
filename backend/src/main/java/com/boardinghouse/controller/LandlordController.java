@@ -1,12 +1,16 @@
 package com.boardinghouse.controller;
 
+import com.boardinghouse.dto.InquiryResponse;
 import com.boardinghouse.dto.ListingRequest;
 import com.boardinghouse.dto.ListingResponse;
+import com.boardinghouse.entity.Inquiry;
 import com.boardinghouse.entity.Listing;
 import com.boardinghouse.entity.User;
+import com.boardinghouse.service.InquiryService;
 import com.boardinghouse.service.ListingService;
 import com.boardinghouse.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +25,7 @@ public class LandlordController {
 
     private final ListingService listingService;
     private final UserService userService;
+    private final InquiryService inquiryService;
 
     @PreAuthorize("hasRole('LANDLORD')")
     @PostMapping("/listing")
@@ -57,5 +62,26 @@ public class LandlordController {
     @DeleteMapping("/listing/{id}")
     public void deleteListing(@PathVariable Long id) {
         listingService.delete(id);
+    }
+    
+    // ⭐ Get all inquiries for the landlord's listings
+    @PreAuthorize("hasRole('LANDLORD')")
+    @GetMapping("/inquiries")
+    public ResponseEntity<List<InquiryResponse>> getInquiries(Authentication authentication) {
+        User landlord = (User) authentication.getPrincipal();
+        List<Inquiry> inquiries = inquiryService.getInquiriesByLandlord(landlord.getId());
+        return ResponseEntity.ok(inquiryService.toResponseList(inquiries));
+    }
+    
+    // ⭐ Update inquiry status (mark as replied, scheduled, etc.)
+    @PreAuthorize("hasRole('LANDLORD')")
+    @PutMapping("/inquiry/{id}/status")
+    public ResponseEntity<InquiryResponse> updateInquiryStatus(
+            @PathVariable Long id,
+            @RequestParam String status,
+            Authentication authentication) {
+        Inquiry.InquiryStatus newStatus = Inquiry.InquiryStatus.valueOf(status.toUpperCase());
+        Inquiry updated = inquiryService.updateInquiryStatus(id, newStatus);
+        return ResponseEntity.ok(inquiryService.toResponse(updated));
     }
 }

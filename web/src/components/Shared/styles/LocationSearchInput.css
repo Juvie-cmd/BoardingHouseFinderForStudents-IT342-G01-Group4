@@ -1,0 +1,163 @@
+/* src/components/Shared/styles/LocationSearchInput.css */
+
+.location-search-input {
+  position: relative;
+  width: 100%;
+}
+
+.location-search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.location-search-icon {
+  position: absolute;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  color: #6b7280;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.location-search-field {
+  width: 100%;
+  padding: 10px 40px 10px 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: #fff;
+}
+
+.location-search-field:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.location-search-field::placeholder {
+  color: #9ca3af;
+}
+
+.location-search-loading {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.location-search-loading .spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.location-search-clear {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.location-search-clear:hover {
+  color: #374151;
+  background-color: #f3f4f6;
+}
+
+.location-search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  padding: 0;
+  list-style: none;
+  background-color: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 100;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.location-search-suggestion {
+  display: flex;
+  align-items: flex-start;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  gap: 10px;
+}
+
+.location-search-suggestion:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.location-search-suggestion:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
+.location-search-suggestion:only-child {
+  border-radius: 8px;
+}
+
+.location-search-suggestion:hover,
+.location-search-suggestion.selected {
+  background-color: #f3f4f6;
+}
+
+.location-search-suggestion.selected {
+  background-color: #e5e7eb;
+}
+
+.suggestion-icon {
+  flex-shrink: 0;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.suggestion-text {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* Scrollbar styling for suggestions */
+.location-search-suggestions::-webkit-scrollbar {
+  width: 6px;
+}
+
+.location-search-suggestions::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.location-search-suggestions::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.location-search-suggestions::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

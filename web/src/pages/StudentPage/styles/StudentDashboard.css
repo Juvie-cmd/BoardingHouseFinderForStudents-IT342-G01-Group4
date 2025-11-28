@@ -41,8 +41,6 @@
 }
 .search-grid-item-button { align-self: flex-end; }
 
----
-
 /* --- Why Choose Section --- */
 .why-choose-section {
   /* padding: 5rem 1rem; */ /* Added horizontal padding */
@@ -83,7 +81,7 @@
 .feature-item h3 { margin-bottom: 0.5rem; }
 .feature-item p { font-size: 0.875rem; color: var(--medium-text); margin-bottom: 0; }
 
----
+/* --- Section separator --- */
 
 /* --- Featured Listings Section --- */
 .featured-listings-section {
@@ -94,10 +92,30 @@
 .featured-listings-section .section-header { /* Style section header if needed */
   /* margin-bottom: 2rem; */ /* Adjust spacing */
   margin-bottom: 2.5rem; /* Increased spacing */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.section-header-left {
+  flex: 1;
+}
+.section-header-right {
+  flex-shrink: 0;
 }
 .featured-listings-section .grid-3-col { /* Ensure grid layout */
   max-width: 80rem; /* Use container width */
   margin: 0 auto; /* Center the grid */
+}
+
+/* --- Map View Wrapper --- */
+.listings-map-wrapper {
+  max-width: 80rem;
+  margin: 0 auto 2.5rem auto;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
 }
 
 /* --- Listing Card Styles (Copied & Adjusted from previous response) --- */
