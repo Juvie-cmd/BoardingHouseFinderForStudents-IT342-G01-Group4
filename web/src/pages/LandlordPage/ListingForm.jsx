@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../api/api';
 import { ArrowLeftIcon, CloudIcon, CloseIcon } from '../../components/Shared/Icons';
+import { LocationPicker } from '../../components/Shared/LocationPicker';
 import './styles/ListingForm.css';
 
 const toast = {
@@ -239,24 +240,38 @@ export function ListingForm({ listingId, onBack }) {
                   className="textarea" />
               </div>
 
-              <div className="form-grid-2">
-                <div className="form-group">
-                  <label htmlFor="location">Location *</label>
-                  <input id="location"
-                    placeholder="e.g., Downtown University District"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    required className="input" />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="price">Monthly Rent (₱) *</label>
-                  <input id="price" type="number"
-                    placeholder="350"
-                    value={formData.price}
-                    onChange={(e) => handleInputChange('price', e.target.value)}
-                    required className="input" />
-                </div>
+              <div className="form-group">
+                <label htmlFor="price">Monthly Rent (₱) *</label>
+                <input id="price" type="number"
+                  placeholder="350"
+                  value={formData.price}
+                  onChange={(e) => handleInputChange('price', e.target.value)}
+                  required className="input" />
               </div>
+            </div>
+          </div>
+
+          {/* Location with Map */}
+          <div className="card form-card">
+            <div className="card-header">
+              <h3>Location</h3>
+              <p className="text-muted small-text">Search for an address or click on the map to set the exact location</p>
+            </div>
+            <div className="card-content form-card-content">
+              <LocationPicker
+                address={formData.location}
+                latitude={formData.latitude ? parseFloat(formData.latitude) : null}
+                longitude={formData.longitude ? parseFloat(formData.longitude) : null}
+                onLocationChange={(locationData) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    location: locationData.address || '',
+                    latitude: locationData.latitude || '',
+                    longitude: locationData.longitude || ''
+                  }));
+                }}
+              />
+              {validationErrors.location && <span className="error-text">{validationErrors.location}</span>}
             </div>
           </div>
 
