@@ -1,16 +1,64 @@
-# React + Vite
+# Boarding House Finder - Web Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the web frontend for the Boarding House Finder application, built with React + Vite.
 
-Currently, two official plugins are available:
+## Environment Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
 
-## React Compiler
+2. Configure the environment variables in `.env`:
+   - `VITE_API_URL`: Backend API URL (e.g., `http://localhost:8080` for local development)
+   - `VITE_SUPABASE_URL`: Your Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Supabase Storage Setup
 
-## Expanding the ESLint configuration
+For image uploads to work, you need to set up Supabase Storage:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
+2. Navigate to **Storage** in the sidebar
+3. Create a new bucket called `listing-images`
+4. Set the bucket to **Public** (so images can be viewed without authentication)
+5. Configure a storage policy to allow uploads:
+   - For development/testing: Allow all authenticated and anonymous uploads
+   - For production: Restrict uploads to authenticated users only
+
+### Sample Storage Policy (for development)
+
+```sql
+-- Allow public read access
+CREATE POLICY "Public Access" ON storage.objects
+  FOR SELECT USING (bucket_id = 'listing-images');
+
+-- Allow authenticated uploads
+CREATE POLICY "Authenticated Upload" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'listing-images');
+```
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## Tech Stack
+
+- React 19
+- Vite 7
+- Axios for API calls
+- @supabase/supabase-js for image storage
+- React Router for navigation
+- Leaflet for maps
