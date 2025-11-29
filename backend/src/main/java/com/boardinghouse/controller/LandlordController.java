@@ -3,6 +3,7 @@ package com.boardinghouse.controller;
 import com.boardinghouse.dto.InquiryResponse;
 import com.boardinghouse.dto.ListingRequest;
 import com.boardinghouse.dto.ListingResponse;
+import com.boardinghouse.dto.ReplyRequest;
 import com.boardinghouse.entity.Inquiry;
 import com.boardinghouse.entity.Listing;
 import com.boardinghouse.entity.User;
@@ -15,7 +16,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/landlord")
@@ -83,5 +86,27 @@ public class LandlordController {
         Inquiry.InquiryStatus newStatus = Inquiry.InquiryStatus.valueOf(status.toUpperCase());
         Inquiry updated = inquiryService.updateInquiryStatus(id, newStatus);
         return ResponseEntity.ok(inquiryService.toResponse(updated));
+    }
+
+    // ⭐ Reply to an inquiry
+    @PreAuthorize("hasRole('LANDLORD')")
+    @PutMapping("/inquiry/{id}/reply")
+    public ResponseEntity<InquiryResponse> replyToInquiry(
+            @PathVariable Long id,
+            @RequestBody ReplyRequest request,
+            Authentication authentication) {
+        Inquiry updated = inquiryService.replyToInquiry(id, request.getReply());
+        return ResponseEntity.ok(inquiryService.toResponse(updated));
+    }
+
+    // ⭐ Get total views for landlord's listings
+    @PreAuthorize("hasRole('LANDLORD')")
+    @GetMapping("/stats/views")
+    public ResponseEntity<Map<String, Integer>> getTotalViews(Authentication authentication) {
+        User landlord = (User) authentication.getPrincipal();
+        Integer totalViews = listingService.getTotalViewsByLandlord(landlord.getId());
+        Map<String, Integer> response = new HashMap<>();
+        response.put("totalViews", totalViews);
+        return ResponseEntity.ok(response);
     }
 }
