@@ -116,6 +116,20 @@ public class ListingService {
         return listings;
     }
 
+    public Listing incrementViewCount(Long id) {
+        Listing listing = getById(id);
+        Integer currentViews = listing.getViewCount() != null ? listing.getViewCount() : 0;
+        listing.setViewCount(currentViews + 1);
+        return listingRepository.save(listing);
+    }
+
+    public Integer getTotalViewsByLandlord(Long landlordId) {
+        List<Listing> listings = getByLandlord(landlordId);
+        return listings.stream()
+                .mapToInt(l -> l.getViewCount() != null ? l.getViewCount() : 0)
+                .sum();
+    }
+
     /* ---------------------
        DTO / Mapper helpers
        --------------------- */
@@ -152,6 +166,7 @@ public class ListingService {
         r.setWebsite(l.getWebsite());
         r.setStatus(l.getStatus() != null ? l.getStatus().name() : "PENDING");
         r.setRejectionNotes(l.getRejectionNotes());
+        r.setViewCount(l.getViewCount() != null ? l.getViewCount() : 0);
 
         if (l.getAmenities() != null && !l.getAmenities().isBlank()) {
             List<String> am = Arrays.stream(l.getAmenities().split(","))

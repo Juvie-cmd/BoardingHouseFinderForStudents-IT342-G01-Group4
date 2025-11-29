@@ -25,6 +25,7 @@ public class ListingResponse {
     private String website;
     private String status; // PENDING, APPROVED, REJECTED
     private String rejectionNotes;
+    private Integer viewCount;
     private LandlordInfo landlord;
     
     @Data

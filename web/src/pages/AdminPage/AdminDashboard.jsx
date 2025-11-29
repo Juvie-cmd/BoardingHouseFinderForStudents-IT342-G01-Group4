@@ -466,7 +466,7 @@ export function AdminDashboard() {
                                       {listing.location}
                                     </p>
                                   </div>
-                                  <span className={`badge ${getListingStatusClass(listing.status)}`}>
+                                  <span className={`badge badge-large ${getListingStatusClass(listing.status)}`}>
                                     {getListingStatusLabel(listing.status)}
                                   </span>
                                 </div>
@@ -486,22 +486,26 @@ export function AdminDashboard() {
                                     <strong>Rejection Notes:</strong> {listing.rejectionNotes}
                                   </div>
                                 )}
-                                {/* ALL BUTTONS ALWAYS VISIBLE AND FUNCTIONAL */}
+                                {/* Conditional action buttons based on status */}
                                 <div className="admin-listing-actions">
+                                  {listing.status !== 'APPROVED' && (
+                                    <button 
+                                      className="button button-success button-small admin-action-btn" 
+                                      onClick={() => approveListing(listing.id)}
+                                    >
+                                      <span className="icon"><CheckIcon size={16} /></span> Approve
+                                    </button>
+                                  )}
+                                  {listing.status !== 'REJECTED' && (
+                                    <button 
+                                      className="button button-warning button-small admin-action-btn" 
+                                      onClick={() => handleRejectListing(listing)}
+                                    >
+                                      <span className="icon"><CloseIcon size={16} /></span> Reject
+                                    </button>
+                                  )}
                                   <button 
-                                    className="button button-primary button-small" 
-                                    onClick={() => approveListing(listing.id)}
-                                  >
-                                    <span className="icon"><CheckIcon size={16} /></span> Approve
-                                  </button>
-                                  <button 
-                                    className="button button-warning button-small" 
-                                    onClick={() => handleRejectListing(listing)}
-                                  >
-                                    <span className="icon"><CloseIcon size={16} /></span> Reject
-                                  </button>
-                                  <button 
-                                    className="button button-danger button-small" 
+                                    className="button button-danger button-small admin-action-btn" 
                                     onClick={() => handleDeleteListing(listing)}
                                   >
                                     <span className="icon"><TrashIcon size={16} /></span> Delete

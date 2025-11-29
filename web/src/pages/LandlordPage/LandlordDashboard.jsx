@@ -12,8 +12,14 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [totalViews, setTotalViews] = useState(0);
+  
+  // Reply modal state
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyText, setReplyText] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
 
-  // Stats placeholder — will compute from data
+  // Calculate stats from data
   const stats = {
     totalListings: myListings.length,
     approvedListings: myListings.filter(l => l.status === 'APPROVED').length,
@@ -22,7 +28,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
     totalInquiries: recentInquiries.length,
     newInquiries: recentInquiries.filter(i => i.status === 'NEW').length,
     monthlyRevenue: myListings.reduce((sum, l) => sum + (l.price || 0), 0) || 0,
-    viewsThisMonth: 0,
+    viewsThisMonth: totalViews,
     averageRating: myListings.length ? (myListings.reduce((s, l) => s + (l.rating || 0), 0) / myListings.length).toFixed(1) : 0,
   };
 
@@ -32,9 +38,10 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
     
     Promise.all([
       API.get("/landlord/listings"),
-      API.get("/landlord/inquiries").catch(() => ({ data: [] }))
+      API.get("/landlord/inquiries").catch(() => ({ data: [] })),
+      API.get("/landlord/stats/views").catch(() => ({ data: { totalViews: 0 } }))
     ])
-      .then(([listRes, inqRes]) => {
+      .then(([listRes, inqRes, viewsRes]) => {
         console.log("Listings response:", listRes.data);
         console.log("Inquiries response:", inqRes.data);
         
@@ -46,9 +53,13 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
           return l;
         });
         
+        // Calculate total views from listings
+        const calculatedViews = normalized.reduce((sum, l) => sum + (l.viewCount || 0), 0);
+        
         console.log("Normalized listings:", normalized);
         setMyListings(normalized);
         setRecentInquiries(inqRes.data || []);
+        setTotalViews(viewsRes.data?.totalViews || calculatedViews);
         setError(null);
       })
       .catch(err => {
@@ -80,6 +91,41 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
   };
 
   const cancelDeleteListing = () => setDeleteConfirm(null);
+
+  // Reply functions
+  const handleReply = (inquiry) => {
+    setReplyingTo(inquiry);
+    setReplyText('');
+  };
+
+  const sendReply = async () => {
+    if (!replyText.trim()) {
+      alert('Please enter a reply message');
+      return;
+    }
+    
+    setSendingReply(true);
+    try {
+      const response = await API.put(`/landlord/inquiry/${replyingTo.id}/reply`, { reply: replyText });
+      // Update inquiry in the list
+      setRecentInquiries(prev => prev.map(inq => 
+        inq.id === replyingTo.id ? { ...inq, status: 'REPLIED', reply: replyText, repliedAt: new Date().toISOString() } : inq
+      ));
+      setReplyingTo(null);
+      setReplyText('');
+      alert('Reply sent successfully!');
+    } catch (err) {
+      console.error('Failed to send reply:', err);
+      alert('Failed to send reply: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSendingReply(false);
+    }
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
+    setReplyText('');
+  };
 
   const getInquiryStatusClass = (status) => {
     if (status === 'NEW') return 'badge-primary';
@@ -113,7 +159,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
   const performanceItems = [
     { icon: <EyeIcon size={20} />, label: 'Total Views', value: stats.viewsThisMonth, iconColor: 'blue' },
     { icon: <MessageIcon size={20} />, label: 'Inquiries', value: stats.totalInquiries, iconColor: 'purple' },
-    { icon: <ChartIcon size={20} />, label: 'Conversion Rate', value: '7.2%', iconColor: 'green' },
+    { icon: <ChartIcon size={20} />, label: 'Conversion Rate', value: stats.totalInquiries > 0 && stats.viewsThisMonth > 0 ? ((stats.totalInquiries / stats.viewsThisMonth) * 100).toFixed(1) + '%' : '0%', iconColor: 'green' },
     { icon: <StarIcon size={20} fill="#FFD700" color="#FFD700" />, label: 'Avg Rating', value: stats.averageRating, iconColor: 'yellow' },
   ];
 
@@ -133,9 +179,13 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
       header: 'Actions',
       field: 'actions',
       className: 'text-right',
-      render: () => (
-        <button className="button button-link button-small">
-          <span className="icon"><MessageIcon size={16} /></span> Reply
+      render: (inquiry) => (
+        <button 
+          className="button button-link button-small"
+          onClick={() => handleReply(inquiry)}
+        >
+          <span className="icon"><MessageIcon size={16} /></span> 
+          {inquiry.status === 'REPLIED' ? 'View/Edit Reply' : 'Reply'}
         </button>
       )
     }
@@ -207,14 +257,27 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                               Requested: {inquiry.visitDate} {inquiry.visitTime && `at ${inquiry.visitTime}`}
                             </p>
                           )}
-                          <p className="inquiry-date">{inquiry.dateSent || inquiry.createdAt}</p>
+                          {inquiry.reply && (
+                            <div className="inquiry-reply" style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#f0fdf4', borderRadius: '4px', borderLeft: '3px solid #22c55e' }}>
+                              <p style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: '600' }}>Your Reply:</p>
+                              <p style={{ fontSize: '0.875rem', color: '#166534' }}>{inquiry.reply}</p>
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                            <p className="inquiry-date">{inquiry.dateSent || inquiry.createdAt}</p>
+                            <button 
+                              className="button button-link button-small"
+                              onClick={() => handleReply(inquiry)}
+                            >
+                              {inquiry.status === 'REPLIED' ? 'Edit Reply' : 'Reply'}
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <p className="text-muted">No inquiries yet</p>
                   )}
-                  <button className="button button-secondary button-full-width inquiry-view-all">View All Messages</button>
                 </div>
               </div>
 
@@ -281,11 +344,11 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                           </div>
                           <div>
                             <p className="stat-label">Rating</p>
-                            <p className="stat-value"><span className="icon"><StarIcon size={14} fill="#FFD700" color="#FFD700" /></span>{listing.rating}</p>
+                            <p className="stat-value"><span className="icon"><StarIcon size={14} fill="#FFD700" color="#FFD700" /></span>{listing.rating || 0}</p>
                           </div>
                           <div>
-                            <p className="stat-label">Reviews</p>
-                            <p className="stat-value">{listing.reviews}</p>
+                            <p className="stat-label">Views</p>
+                            <p className="stat-value">{listing.viewCount || 0}</p>
                           </div>
                         </div>
                         <div className="listing-item-actions">
@@ -356,7 +419,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                 </div>
                 <div className="card-content">
                   <div className="stat-value-main">{stats.viewsThisMonth}</div>
-                  <p className="stat-change positive">+18%</p>
+                  <p className="stat-change positive">All time</p>
                 </div>
               </div>
               <div className="card analytics-stat-card">
@@ -366,7 +429,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                 </div>
                 <div className="card-content">
                   <div className="stat-value-main">{stats.totalInquiries}</div>
-                  <p className="stat-change positive">+23%</p>
+                  <p className="stat-change positive">{stats.newInquiries} new</p>
                 </div>
               </div>
               <div className="card analytics-stat-card">
@@ -393,28 +456,33 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                 </div>
                 <div className="card-content">
                   <div className="listing-performance-list">
-                    {myListings.map((listing) => (
-                      <div key={listing.id} className="listing-performance-item">
-                        <div className="performance-item-header">
-                          <span>{listing.title}</span>
-                          <span className="badge badge-warning"><StarIcon size={14} fill="#FFD700" color="#FFD700" /> {listing.rating}</span>
+                    {myListings.map((listing) => {
+                      const listingInquiries = recentInquiries.filter(i => i.listing?.id === listing.id).length;
+                      const views = listing.viewCount || 0;
+                      const conversion = views > 0 ? ((listingInquiries / views) * 100).toFixed(1) : 0;
+                      return (
+                        <div key={listing.id} className="listing-performance-item">
+                          <div className="performance-item-header">
+                            <span>{listing.title}</span>
+                            <span className="badge badge-warning"><StarIcon size={14} fill="#FFD700" color="#FFD700" /> {listing.rating || 0}</span>
+                          </div>
+                          <div className="performance-item-stats">
+                            <div>
+                              <p className="stat-label">Views</p>
+                              <p className="stat-value">{views}</p>
+                            </div>
+                            <div>
+                              <p className="stat-label">Inquiries</p>
+                              <p className="stat-value">{listingInquiries}</p>
+                            </div>
+                            <div>
+                              <p className="stat-label">Conversion</p>
+                              <p className="stat-value">{conversion}%</p>
+                            </div>
+                          </div>
                         </div>
-                        <div className="performance-item-stats">
-                          <div>
-                            <p className="stat-label">Views</p>
-                            <p className="stat-value">142</p>
-                          </div>
-                          <div>
-                            <p className="stat-label">Inquiries</p>
-                            <p className="stat-value">8</p>
-                          </div>
-                          <div>
-                            <p className="stat-label">Conversion</p>
-                            <p className="stat-value">5.6%</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -457,6 +525,62 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
               <button className="button button-secondary" onClick={cancelDeleteListing}>Cancel</button>
               <button className="button button-danger" onClick={confirmDeleteListing}>
                 <span className="icon"><TrashIcon size={16} /></span> Delete Listing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reply Modal */}
+      {replyingTo && (
+        <div className="modal-overlay" onClick={cancelReply}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Reply to Inquiry</h3>
+              <button className="button button-link" onClick={cancelReply}>
+                <CloseIcon size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div style={{ marginBottom: '1rem', padding: '1rem', background: '#f3f4f6', borderRadius: '8px' }}>
+                <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                  From: <strong>{replyingTo.student?.name || 'Student'}</strong>
+                </p>
+                <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                  Regarding: <strong>{replyingTo.listing?.title || 'Listing'}</strong>
+                </p>
+                <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.5rem' }}>
+                  {replyingTo.type === 'VISIT_REQUEST' ? '📅 Visit Request' : '💬 Message'}
+                </p>
+                <div style={{ padding: '0.75rem', background: 'white', borderRadius: '4px', marginTop: '0.5rem' }}>
+                  <p style={{ fontSize: '0.875rem' }}>{replyingTo.message || replyingTo.notes}</p>
+                  {replyingTo.type === 'VISIT_REQUEST' && replyingTo.visitDate && (
+                    <p style={{ fontSize: '0.875rem', color: '#3b82f6', marginTop: '0.5rem' }}>
+                      Requested: {replyingTo.visitDate} {replyingTo.visitTime && `at ${replyingTo.visitTime}`}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Your Reply <span style={{ color: '#dc2626' }}>*</span></label>
+                <textarea
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  className="textarea"
+                  rows={4}
+                  placeholder="Type your reply here..."
+                  defaultValue={replyingTo.reply || ''}
+                />
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button className="button button-secondary" onClick={cancelReply}>Cancel</button>
+              <button 
+                className="button button-primary" 
+                onClick={sendReply}
+                disabled={sendingReply || !replyText.trim()}
+              >
+                {sendingReply ? 'Sending...' : 'Send Reply'}
               </button>
             </div>
           </div>

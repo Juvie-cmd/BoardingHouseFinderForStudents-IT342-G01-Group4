@@ -301,3 +301,48 @@
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--border-color);
 }
+
+/* Rating Section */
+.rating-section {
+  padding: 1rem 0;
+}
+
+.rating-input-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.star-rating-input {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.star-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.125rem;
+  transition: transform 0.1s ease;
+}
+
+.star-button:hover {
+  transform: scale(1.15);
+}
+
+.rating-label {
+  font-size: 0.875rem;
+  color: var(--medium-text);
+}
+
+/* Favorite button in detail page */
+.favorite-button-detail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.favorite-button-detail.active {
+  background-color: #fee2e2;
+}

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import API from '../../api/api';
 import { ImageWithFallback } from '../../components/Shared/ImageWithFallback';
 import { Map } from '../../components/Shared/Map';
-import { LinkIcon, StarIcon, UsersIcon, CalendarIcon, CheckIcon, LocationIcon, ArrowLeftIcon, CloseIcon } from '../../components/Shared/Icons';
+import { LinkIcon, StarIcon, UsersIcon, CalendarIcon, CheckIcon, LocationIcon, ArrowLeftIcon, CloseIcon, HeartIcon } from '../../components/Shared/Icons';
 import './styles/ListingDetails.css';
 
 export function ListingDetails({ listingId, onBack }) {
@@ -13,6 +13,12 @@ export function ListingDetails({ listingId, onBack }) {
   const [activeTab, setActiveTab] = useState('description');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Rating state
+  const [userRating, setUserRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [userReview, setUserReview] = useState('');
+  const [submittingRating, setSubmittingRating] = useState(false);
   
   // Message modal state
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -33,6 +39,10 @@ export function ListingDetails({ listingId, onBack }) {
     }
 
     setLoading(true);
+    
+    // Increment view count when viewing listing
+    API.post(`/student/listing/${listingId}/view`).catch(() => {});
+    
     API.get(`/student/listing/${listingId}`)
       .then((res) => {
         const data = res.data;
@@ -55,6 +65,84 @@ export function ListingDetails({ listingId, onBack }) {
       })
       .finally(() => setLoading(false));
   }, [listingId]);
+
+  // Check if listing is favorited
+  useEffect(() => {
+    if (listingId) {
+      API.get(`/student/favorite/${listingId}`)
+        .then((res) => setIsFavorite(res.data.isFavorite))
+        .catch(() => setIsFavorite(false));
+    }
+  }, [listingId]);
+
+  // Load user's existing rating
+  useEffect(() => {
+    if (listingId) {
+      API.get(`/student/rating/${listingId}`)
+        .then((res) => {
+          if (res.data) {
+            setUserRating(res.data.rating || 0);
+            setUserReview(res.data.review || '');
+          }
+        })
+        .catch(() => {});
+    }
+  }, [listingId]);
+
+  // Toggle favorite
+  const toggleFavorite = async () => {
+    try {
+      if (isFavorite) {
+        await API.delete(`/student/favorite/${listingId}`);
+        setIsFavorite(false);
+      } else {
+        await API.post('/student/favorite', { listingId });
+        setIsFavorite(true);
+      }
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        alert("Please log in as a student to save favorites");
+      }
+    }
+  };
+
+  // Submit rating
+  const handleSubmitRating = async () => {
+    if (userRating === 0) {
+      alert('Please select a rating');
+      return;
+    }
+    
+    setSubmittingRating(true);
+    try {
+      const response = await API.post('/student/rating', {
+        listingId,
+        rating: userRating,
+        review: userReview
+      });
+      
+      // Update listing with new rating
+      if (listing) {
+        setListing({
+          ...listing,
+          rating: response.data.rating,
+          reviews: (listing.reviews || 0) + (userRating === 0 ? 1 : 0)
+        });
+      }
+      
+      alert('Rating submitted successfully!');
+    } catch (err) {
+      console.error('Failed to submit rating:', err);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        alert("Please log in as a student to rate properties");
+      } else {
+        alert('Failed to submit rating');
+      }
+    } finally {
+      setSubmittingRating(false);
+    }
+  };
 
   // Send message to landlord
   const handleSendMessage = (e) => {
@@ -111,6 +199,30 @@ export function ListingDetails({ listingId, onBack }) {
       .finally(() => setSendingVisitRequest(false));
   };
 
+  // Star rating component
+  const StarRating = ({ rating, onRate, onHover, hoveredRating, size = 24 }) => {
+    return (
+      <div className="star-rating-input">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            className="star-button"
+            onClick={() => onRate(star)}
+            onMouseEnter={() => onHover(star)}
+            onMouseLeave={() => onHover(0)}
+          >
+            <StarIcon 
+              size={size} 
+              fill={(hoveredRating || rating) >= star ? "#FFD700" : "none"} 
+              color="#FFD700" 
+            />
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="details-page">
@@ -159,9 +271,11 @@ export function ListingDetails({ listingId, onBack }) {
                 />
                 <div className="gallery-actions">
                   <button
-                    className={`button button-secondary button-icon favorite-button ${isFavorite ? 'active' : ''}`}
-                    onClick={() => setIsFavorite(!isFavorite)}
-                  />
+                    className={`button button-secondary button-icon favorite-button-detail ${isFavorite ? 'active' : ''}`}
+                    onClick={toggleFavorite}
+                  >
+                    <HeartIcon size={20} color="#ef4444" fill={isFavorite ? "#ef4444" : "none"} />
+                  </button>
                   <button className="button button-secondary button-icon">
                     <span className="icon"><LinkIcon size={16} /></span>
                   </button>
@@ -195,14 +309,49 @@ export function ListingDetails({ listingId, onBack }) {
                   <h1>{listing.title}</h1>
                   <div className="rating">
                     <span className="icon"><StarIcon size={16} fill="#FFD700" color="#FFD700" /></span>
-                    <span>{listing.rating}</span>
-                    <span className="light-text">({listing.reviews} reviews)</span>
+                    <span>{listing.rating || 0}</span>
+                    <span className="light-text">({listing.reviews || 0} reviews)</span>
                   </div>
                 </div>
                 <div className="details-header-price">
                   <div className="price">₱{listing.price}</div>
                   <div className="period">per month</div>
                 </div>
+              </div>
+
+              <hr className="separator" />
+
+              {/* Rating Section */}
+              <div className="details-section rating-section">
+                <h3>Rate this Property</h3>
+                <div className="rating-input-container">
+                  <StarRating 
+                    rating={userRating} 
+                    onRate={setUserRating} 
+                    onHover={setHoverRating}
+                    hoveredRating={hoverRating}
+                    size={28}
+                  />
+                  <span className="rating-label">
+                    {userRating > 0 ? `${userRating} star${userRating > 1 ? 's' : ''}` : 'Select rating'}
+                  </span>
+                </div>
+                <div className="form-group" style={{ marginTop: '0.75rem' }}>
+                  <textarea
+                    value={userReview}
+                    onChange={(e) => setUserReview(e.target.value)}
+                    className="textarea"
+                    rows={2}
+                    placeholder="Write a review (optional)..."
+                  />
+                </div>
+                <button 
+                  className="button button-primary button-small" 
+                  onClick={handleSubmitRating}
+                  disabled={submittingRating || userRating === 0}
+                >
+                  {submittingRating ? 'Submitting...' : 'Submit Rating'}
+                </button>
               </div>
 
               <hr className="separator" />

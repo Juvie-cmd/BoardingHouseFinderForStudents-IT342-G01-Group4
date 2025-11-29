@@ -73,6 +73,10 @@ public class Listing {
     private Double latitude;
     private Double longitude;
 
+    // View counter
+    @Builder.Default
+    private Integer viewCount = 0;
+
     // Landlord user
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "landlord_id")

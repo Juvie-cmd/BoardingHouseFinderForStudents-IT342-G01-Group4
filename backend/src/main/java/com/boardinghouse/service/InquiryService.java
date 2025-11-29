@@ -71,6 +71,15 @@ public class InquiryService {
         return inquiryRepository.save(inquiry);
     }
 
+    public Inquiry replyToInquiry(Long inquiryId, String reply) {
+        Inquiry inquiry = inquiryRepository.findById(inquiryId)
+                .orElseThrow(() -> new RuntimeException("Inquiry not found"));
+        inquiry.setReply(reply);
+        inquiry.setRepliedAt(java.time.LocalDateTime.now());
+        inquiry.setStatus(Inquiry.InquiryStatus.REPLIED);
+        return inquiryRepository.save(inquiry);
+    }
+
     public InquiryResponse toResponse(Inquiry inquiry) {
         InquiryResponse response = new InquiryResponse();
         response.setId(inquiry.getId());
@@ -107,6 +116,12 @@ public class InquiryService {
             listingInfo.setTitle(inquiry.getListing().getTitle());
             listingInfo.setLocation(inquiry.getListing().getLocation());
             response.setListing(listingInfo);
+        }
+
+        // Reply info
+        response.setReply(inquiry.getReply());
+        if (inquiry.getRepliedAt() != null) {
+            response.setRepliedAt(inquiry.getRepliedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
         }
 
         return response;
