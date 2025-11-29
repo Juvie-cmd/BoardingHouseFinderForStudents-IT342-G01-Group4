@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RatingService {
 
+    private static final double DECIMAL_ROUNDING_FACTOR = 10.0;
+    
     private final RatingRepository ratingRepository;
     private final ListingRepository listingRepository;
 
@@ -29,7 +31,7 @@ public class RatingService {
 
         // Validate rating value
         if (request.getRating() < 1 || request.getRating() > 5) {
-            throw new RuntimeException("Rating must be between 1 and 5");
+            throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
 
         Optional<Rating> existingRating = ratingRepository.findByUser_IdAndListing_Id(user.getId(), request.getListingId());
@@ -68,7 +70,7 @@ public class RatingService {
 
     public Double getAverageRating(Long listingId) {
         Double avg = ratingRepository.getAverageRatingByListingId(listingId);
-        return avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0;
+        return avg != null ? Math.round(avg * DECIMAL_ROUNDING_FACTOR) / DECIMAL_ROUNDING_FACTOR : 0.0;
     }
 
     public Integer getReviewCount(Long listingId) {

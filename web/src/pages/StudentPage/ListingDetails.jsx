@@ -18,6 +18,7 @@ export function ListingDetails({ listingId, onBack }) {
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [userReview, setUserReview] = useState('');
+  const [hasExistingRating, setHasExistingRating] = useState(false);
   const [submittingRating, setSubmittingRating] = useState(false);
   
   // Message modal state
@@ -83,6 +84,7 @@ export function ListingDetails({ listingId, onBack }) {
           if (res.data) {
             setUserRating(res.data.rating || 0);
             setUserReview(res.data.review || '');
+            setHasExistingRating(true);
           }
         })
         .catch(() => {});
@@ -116,19 +118,20 @@ export function ListingDetails({ listingId, onBack }) {
     
     setSubmittingRating(true);
     try {
-      const response = await API.post('/student/rating', {
+      await API.post('/student/rating', {
         listingId,
         rating: userRating,
         review: userReview
       });
       
-      // Update listing with new rating
-      if (listing) {
+      // Update listing with new rating stats - the backend recalculates averages
+      // Only increment review count if this is a new rating (not an update)
+      if (listing && !hasExistingRating) {
         setListing({
           ...listing,
-          rating: response.data.rating,
-          reviews: (listing.reviews || 0) + (userRating === 0 ? 1 : 0)
+          reviews: (listing.reviews || 0) + 1
         });
+        setHasExistingRating(true);
       }
       
       alert('Rating submitted successfully!');

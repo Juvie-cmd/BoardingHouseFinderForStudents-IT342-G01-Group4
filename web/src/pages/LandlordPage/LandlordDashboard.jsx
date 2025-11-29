@@ -95,7 +95,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
   // Reply functions
   const handleReply = (inquiry) => {
     setReplyingTo(inquiry);
-    setReplyText('');
+    setReplyText(inquiry.reply || '');
   };
 
   const sendReply = async () => {
@@ -569,7 +569,6 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                   className="textarea"
                   rows={4}
                   placeholder="Type your reply here..."
-                  defaultValue={replyingTo.reply || ''}
                 />
               </div>
             </div>

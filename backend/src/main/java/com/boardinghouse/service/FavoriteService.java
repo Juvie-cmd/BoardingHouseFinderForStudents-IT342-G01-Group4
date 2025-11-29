@@ -23,7 +23,7 @@ public class FavoriteService {
     public Favorite addFavorite(Long listingId, User user) {
         // Check if already favorited
         if (favoriteRepository.existsByUser_IdAndListing_Id(user.getId(), listingId)) {
-            throw new RuntimeException("Listing already in favorites");
+            throw new IllegalStateException("Listing already in favorites");
         }
 
         Listing listing = listingRepository.findById(listingId)
