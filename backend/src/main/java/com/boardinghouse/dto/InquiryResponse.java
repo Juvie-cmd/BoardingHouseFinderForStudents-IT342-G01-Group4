@@ -14,6 +14,10 @@ public class InquiryResponse {
     private String createdAt;
     private String dateSent; // alias for createdAt for frontend compatibility
     
+    // Reply fields
+    private String reply;
+    private String repliedAt;
+    
     // Student info
     private StudentInfo student;
     

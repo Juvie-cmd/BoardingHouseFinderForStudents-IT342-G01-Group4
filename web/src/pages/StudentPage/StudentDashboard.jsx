@@ -18,6 +18,7 @@ import "./styles/StudentDashboard.css";
 export function StudentDashboard({ onViewDetails }) {
   const [listings, setListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
+  const [favorites, setFavorites] = useState(new Set());
 
   const [location, setLocation] = useState("");
   const [searchLocation, setSearchLocation] = useState(null); // {latitude, longitude}
@@ -55,6 +56,43 @@ export function StudentDashboard({ onViewDetails }) {
       })
       .catch((err) => console.error("Error loading listings:", err));
   }, []);
+
+  // ⭐ LOAD USER FAVORITES
+  useEffect(() => {
+    API.get("/student/favorites")
+      .then((res) => {
+        const favoriteIds = new Set((res.data || []).map(f => f.listingId));
+        setFavorites(favoriteIds);
+      })
+      .catch((err) => {
+        // User might not be logged in, ignore error
+        console.log("Could not load favorites:", err.response?.status);
+      });
+  }, []);
+
+  // ⭐ TOGGLE FAVORITE
+  const toggleFavorite = async (e, listingId) => {
+    e.stopPropagation(); // Prevent card click
+    
+    try {
+      if (favorites.has(listingId)) {
+        await API.delete(`/student/favorite/${listingId}`);
+        setFavorites(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(listingId);
+          return newSet;
+        });
+      } else {
+        await API.post('/student/favorite', { listingId });
+        setFavorites(prev => new Set([...prev, listingId]));
+      }
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        alert("Please log in as a student to save favorites");
+      }
+    }
+  };
 
   // Calculate distance between two points (Haversine formula)
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -272,8 +310,15 @@ export function StudentDashboard({ onViewDetails }) {
                     className="listing-image"
                   />
                   <span className="badge featured-badge">Featured</span>
-                  <button className="favorite-button">
-                    <HeartIcon size={18} color="#ef4444" />
+                  <button 
+                    className={`favorite-button ${favorites.has(listing.id) ? 'active' : ''}`}
+                    onClick={(e) => toggleFavorite(e, listing.id)}
+                  >
+                    <HeartIcon 
+                      size={18} 
+                      color="#ef4444" 
+                      fill={favorites.has(listing.id) ? "#ef4444" : "none"} 
+                    />
                   </button>
                 </div>
 
