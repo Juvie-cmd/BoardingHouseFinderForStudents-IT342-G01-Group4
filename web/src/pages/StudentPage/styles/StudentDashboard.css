@@ -313,3 +313,275 @@
 .footer-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem; }
 .footer-col li a:hover { color: white; }
 .footer-bottom { border-top: 1px solid #334155; padding-top: 2rem; text-align: center; font-size: 0.875rem; color: var(--light-text); } /* slate-800 */
+
+/* --- Dashboard Tabs --- */
+.dashboard-tabs-wrapper {
+  background-color: var(--bg-white);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 60px; /* Below header */
+  z-index: 5;
+}
+
+.dashboard-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.dashboard-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--medium-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dashboard-tab:hover {
+  background-color: var(--bg-light-gray);
+  color: var(--dark-text);
+}
+
+.dashboard-tab.active {
+  background-color: var(--primary-light-bg);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.tab-badge {
+  background-color: var(--primary-color);
+  color: var(--bg-white);
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  min-width: 1.25rem;
+  text-align: center;
+}
+
+/* --- Favorites Section --- */
+.favorites-section {
+  padding: 3rem 2rem;
+  background-color: var(--bg-light-gray);
+  min-height: calc(100vh - 200px);
+}
+
+.favorites-section .section-header {
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+/* --- Inquiries Section --- */
+.inquiries-section {
+  padding: 3rem 2rem;
+  background-color: var(--bg-light-gray);
+  min-height: calc(100vh - 200px);
+}
+
+.inquiries-section .section-header {
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.inquiries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 800px;
+}
+
+/* --- Inquiry Card --- */
+.inquiry-card {
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.inquiry-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.25rem;
+  background-color: var(--bg-light-gray);
+  border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.inquiry-listing-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.inquiry-listing-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  color: var(--primary-color);
+  cursor: pointer;
+}
+
+.inquiry-listing-title:hover {
+  text-decoration: underline;
+}
+
+.inquiry-listing-location {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--medium-text);
+}
+
+.inquiry-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.inquiry-badges .badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.inquiry-card-body {
+  padding: 1.25rem;
+}
+
+.inquiry-message-section {
+  margin-bottom: 1rem;
+}
+
+.inquiry-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--dark-text);
+  margin-bottom: 0.5rem;
+}
+
+.inquiry-message {
+  background-color: var(--bg-light-gray);
+  padding: 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.9375rem;
+  color: var(--dark-text);
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+.inquiry-visit-details {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--medium-text);
+  margin-top: 0.5rem;
+}
+
+.inquiry-date {
+  font-size: 0.8125rem;
+  color: var(--light-text);
+  margin-top: 0.5rem;
+}
+
+/* --- Landlord Reply Section --- */
+.inquiry-reply-section {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed var(--border-color);
+}
+
+.reply-label {
+  color: var(--green-color);
+}
+
+.inquiry-reply-box {
+  background-color: var(--green-light-bg);
+  border: 1px solid #86efac;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.inquiry-reply-text {
+  font-size: 0.9375rem;
+  color: var(--dark-text);
+  line-height: 1.5;
+}
+
+.inquiry-reply-date {
+  font-size: 0.8125rem;
+  color: var(--medium-text);
+  text-align: right;
+  margin-top: 0.75rem;
+}
+
+.inquiry-card-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* --- Empty State --- */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius);
+  border: 1px dashed var(--border-color);
+  max-width: 500px;
+  margin: 2rem auto;
+}
+
+.empty-state-icon {
+  margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+  margin-bottom: 0.5rem;
+  color: var(--dark-text);
+}
+
+.empty-state p {
+  color: var(--medium-text);
+  margin-bottom: 1.5rem;
+}
+
+/* --- Loading State --- */
+.loading-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--medium-text);
+}
+
+/* --- No Results Box --- */
+.no-results-box {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: var(--bg-light-gray);
+  border-radius: var(--border-radius);
+  margin-top: 2rem;
+}
+
+.no-results-box h3 {
+  margin-bottom: 1rem;
+}
+
+/* --- Badge secondary --- */
+.badge-secondary {
+  background-color: var(--bg-dark-gray);
+  color: var(--medium-text);
+}
