@@ -57,6 +57,12 @@ public class Inquiry {
 
     private LocalDateTime updatedAt;
 
+    // Landlord reply
+    @Column(columnDefinition = "TEXT")
+    private String reply;
+
+    private LocalDateTime repliedAt;
+
     // Student who sent the inquiry
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
