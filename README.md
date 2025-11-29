@@ -145,7 +145,7 @@ Open the `mobile` folder in Android Studio and run on an emulator or device.
 #### Database:
 1. Go to [Supabase](https://supabase.com) and create a new project
 2. Go to **Settings > Database** and copy the connection string
-3. The format should be: `postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres`
+3. The format should be: `jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?user=postgres.jsaeurafjxxsyzxdbtrn&password=[YOUR PASSWORD]`
 
 #### Storage (for photos):
 1. Go to **Storage** in Supabase Dashboard
