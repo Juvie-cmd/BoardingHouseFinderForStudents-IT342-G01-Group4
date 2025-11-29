@@ -73,8 +73,11 @@ export function StudentDashboard({ onViewDetails }) {
   useEffect(() => {
     API.get("/student/favorites")
       .then((res) => {
-        const favoriteIds = new Set((res.data || []).map(f => f.listingId));
+        const data = res.data || [];
+        const favoriteIds = new Set(data.map(f => f.listingId));
         setFavorites(favoriteIds);
+        // Also set favoritesData for use in favorites tab
+        setFavoritesData(data);
       })
       .catch((err) => {
         // User might not be logged in, ignore error
@@ -82,16 +85,16 @@ export function StudentDashboard({ onViewDetails }) {
       });
   }, []);
 
-  // ⭐ LOAD FAVORITES DATA when My Favorites tab is active
+  // ⭐ REFRESH FAVORITES DATA when My Favorites tab becomes active
   useEffect(() => {
     if (activeTab === "favorites") {
       setFavoritesLoading(true);
       API.get("/student/favorites")
         .then((res) => {
-          setFavoritesData(res.data || []);
-          // Also update the favorites set
-          const favoriteIds = new Set((res.data || []).map(f => f.listingId));
-          setFavorites(favoriteIds);
+          const data = res.data || [];
+          setFavoritesData(data);
+          // Keep favorites set in sync
+          setFavorites(new Set(data.map(f => f.listingId)));
         })
         .catch((err) => {
           console.error("Error loading favorites data:", err);
@@ -630,8 +633,9 @@ export function StudentDashboard({ onViewDetails }) {
                         <HomeIcon size={20} color="#2563eb" />
                         <div>
                           <h4 
-                            className="inquiry-listing-title"
-                            onClick={() => inquiry.listing?.id && onViewDetails(inquiry.listing.id)}
+                            className={`inquiry-listing-title${inquiry.listing?.id ? ' clickable' : ''}`}
+                            onClick={inquiry.listing?.id ? () => onViewDetails(inquiry.listing.id) : undefined}
+                            style={{ cursor: inquiry.listing?.id ? 'pointer' : 'default' }}
                           >
                             {inquiry.listing?.title || 'Listing'}
                           </h4>
@@ -665,6 +669,7 @@ export function StudentDashboard({ onViewDetails }) {
                           Your {inquiry.type === 'VISIT_REQUEST' ? 'Visit Request' : 'Message'}:
                         </div>
                         <div className="inquiry-message">
+                          {/* message is for MESSAGE type, notes is for VISIT_REQUEST type */}
                           {inquiry.message || inquiry.notes || 'No message provided'}
                         </div>
                         {inquiry.type === 'VISIT_REQUEST' && (inquiry.visitDate || inquiry.visitTime) && (
@@ -674,6 +679,7 @@ export function StudentDashboard({ onViewDetails }) {
                           </div>
                         )}
                         <div className="inquiry-date">
+                          {/* Backend returns createdAt, dateSent is an alias for compatibility */}
                           Sent: {formatDate(inquiry.createdAt || inquiry.dateSent)}
                         </div>
                       </div>
