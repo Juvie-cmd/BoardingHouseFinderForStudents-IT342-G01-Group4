@@ -11,7 +11,7 @@ export function TabNavigation({ tabs, selectedTab, onTabChange, className = '' }
         >
           {tab.label}
           {tab.badge && (
-            <span className={`badge ${tab.badgeClass || 'badge-danger'} badge-small`}>
+            <span className={`badge ${tab.badgeClass || 'badge-danger'} badge-small`} style={{ marginLeft: '8px' }}>
               {tab.badge}
             </span>
           )}

@@ -240,8 +240,11 @@ hr.separator { border: 0; border-top: 1px solid var(--border-color); margin: 1re
   border-radius: 99px;
   font-weight: 500;
 }
+.badge-small { padding: 0.15rem 0.5rem; font-size: 0.65rem; }
+.badge-large { padding: 0.35rem 0.85rem; font-size: 0.875rem; font-weight: 600; }
 .badge-primary { background-color: var(--primary-light-bg); color: var(--primary-color); }
 .badge-success { background-color: var(--green-light-bg); color: var(--green-color); }
+.badge-danger { background-color: #fee2e2; color: #dc2626; }
 .badge-admin { background-color: var(--purple-light-bg); color: var(--purple-color); }
 .badge-warning { background-color: #fef3c7; color: #f59e0b; }
 .section-badge { background-color: var(--primary-light-bg); color: var(--primary-color); margin-bottom: 1rem; }

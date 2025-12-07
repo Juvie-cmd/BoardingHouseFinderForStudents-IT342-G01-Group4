@@ -154,7 +154,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'listings', label: 'My Listings' },
-    { id: 'inquiries', label: 'Inquiries' },
+    { id: 'inquiries', label: 'Inquiries', badge: stats.newInquiries > 0 ? stats.newInquiries : null, badgeClass: 'badge-danger badge-large' },
     { id: 'analytics', label: 'Analytics' },
   ];
 
