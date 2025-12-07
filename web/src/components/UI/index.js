@@ -5,3 +5,4 @@ export { Badge } from './Badge';
 export { Alert } from './Alert';
 export { ToggleSwitch } from './ToggleSwitch';
 export { ToastProvider, useToast } from './Toast';
+export { ChangePasswordModal } from './ChangePasswordModal';

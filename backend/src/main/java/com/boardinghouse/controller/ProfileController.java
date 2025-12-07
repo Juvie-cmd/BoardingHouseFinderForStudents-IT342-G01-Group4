@@ -1,6 +1,7 @@
 package com.boardinghouse.controller;
 
 import com.boardinghouse.dto.ApiResponse;
+import com.boardinghouse.dto.ChangePasswordRequest;
 import com.boardinghouse.dto.ProfileUpdateRequest;
 import com.boardinghouse.dto.UserProfileResponse;
 import com.boardinghouse.entity.User;
@@ -34,6 +35,16 @@ public class ProfileController {
         User user = (User) authentication.getPrincipal();
         UserProfileResponse profile = profileService.updateProfile(user.getId(), request);
         return ResponseEntity.ok(profile);
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<ApiResponse> changePassword(
+            Authentication authentication,
+            @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        User user = (User) authentication.getPrincipal();
+        profileService.changePassword(user.getId(), request);
+        return ResponseEntity.ok(ApiResponse.success("Password changed successfully"));
     }
 
     @DeleteMapping

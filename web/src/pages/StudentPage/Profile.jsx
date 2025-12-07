@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Profile } from '../../components/Profile';
-import { FormInput, FormSelect, FormTextarea } from '../../components/UI';
+import { FormInput, FormSelect, FormTextarea, ChangePasswordModal } from '../../components/UI';
 import './styles/Profile.css';
 
 export function StudentProfile() {
   const { user, updateProfile } = useAuth();
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const initialFormData = {
     name: user?.name || '',
@@ -37,7 +39,7 @@ export function StudentProfile() {
       title: 'Change Password',
       description: 'Update your password to keep your account secure',
       type: 'button',
-      action: { label: 'Change', onClick: () => console.log('Change password') }
+      action: { label: 'Change', onClick: () => setShowPasswordModal(true) }
     },
     {
       title: 'Email Notifications',
@@ -137,15 +139,21 @@ export function StudentProfile() {
   );
 
   return (
-    <Profile
-      role="Student"
-      roleVariant="primary"
-      headerTitle="My Profile"
-      headerSubtitle="Manage your account settings and preferences"
-      initialFormData={initialFormData}
-      formFields={formFields}
-      settingsItems={settingsItems}
-      onSubmit={updateProfile} // ✅ Backend integration
-    />
+    <>
+      <Profile
+        role="Student"
+        roleVariant="primary"
+        headerTitle="My Profile"
+        headerSubtitle="Manage your account settings and preferences"
+        initialFormData={initialFormData}
+        formFields={formFields}
+        settingsItems={settingsItems}
+        onSubmit={updateProfile} // ✅ Backend integration
+      />
+      <ChangePasswordModal 
+        isOpen={showPasswordModal} 
+        onClose={() => setShowPasswordModal(false)} 
+      />
+    </>
   );
 }

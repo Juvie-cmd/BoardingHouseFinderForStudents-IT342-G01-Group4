@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ProfileLayout, ProfileGrid, ProfileCard, SettingsSection } from './index';
-import { Card, CardHeader, CardContent, Alert } from '../UI';
+import { Card, CardHeader, CardContent, Alert, useToast } from '../UI';
 import { uploadImage } from '../../utils/supabaseClient';
 
 /**
@@ -22,6 +22,7 @@ export function Profile({
   layoutVariant
 }) {
   const { user, fetchProfile, updateProfile } = useAuth();
+  const toast = useToast();
 
   const buildFormDataFromUser = (userData, defaultData) => {
     if (!defaultData) {
@@ -159,6 +160,7 @@ export function Profile({
         await updateProfile(formData);
       }
       setIsEditing(false);
+      toast.success('Profile Information Updated');
     } catch (err) {
       console.error('Profile update failed:', err);
       setError('Failed to update profile. Please try again.');

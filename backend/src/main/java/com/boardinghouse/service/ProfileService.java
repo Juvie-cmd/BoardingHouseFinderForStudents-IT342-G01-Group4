@@ -1,5 +1,6 @@
 package com.boardinghouse.service;
 
+import com.boardinghouse.dto.ChangePasswordRequest;
 import com.boardinghouse.dto.ProfileUpdateRequest;
 import com.boardinghouse.dto.UserProfileResponse;
 import com.boardinghouse.entity.User;
@@ -7,6 +8,7 @@ import com.boardinghouse.exception.ResourceNotFoundException;
 import com.boardinghouse.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProfileService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /** Get profile by user ID */
     public UserProfileResponse getProfile(Long userId) {
@@ -60,6 +63,46 @@ public class ProfileService {
         log.info("Profile updated successfully for user ID: {}", userId);
 
         return mapToProfileResponse(updatedUser);
+    }
+
+    /** Change password for user */
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        log.info("Changing password for user ID: {}", userId);
+
+        User user = userRepository.findByIdAndActiveTrue(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Check if user is Admin - they cannot change password
+        if ("ADMIN".equals(user.getRole())) {
+            throw new IllegalStateException("Administrator accounts cannot change password through this method");
+        }
+
+        // Check if user registered via OAuth (no password set)
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            throw new IllegalStateException("Cannot change password for OAuth accounts. Please use your OAuth provider.");
+        }
+
+        // Verify current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        // Validate new password matches confirmation
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("New password and confirmation do not match");
+        }
+
+        // Validate new password is different from current
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("New password must be different from current password");
+        }
+
+        // Encode and save new password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        log.info("Password changed successfully for user ID: {}", userId);
     }
 
     /** Soft delete profile by user ID */
