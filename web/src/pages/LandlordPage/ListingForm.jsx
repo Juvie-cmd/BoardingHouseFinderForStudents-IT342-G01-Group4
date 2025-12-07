@@ -4,17 +4,14 @@ import API from '../../api/api';
 import { uploadMultipleImages, supabase } from '../../utils/supabaseClient';
 import { ArrowLeftIcon, CloudIcon, CloseIcon } from '../../components/Shared/Icons';
 import { LocationPicker } from '../../components/Shared/LocationPicker';
+import { useToast } from '../../components/UI';
 import './styles/ListingForm.css';
-
-const toast = {
-  success: (message) => alert(`Success: ${message}`),
-  error: (message) => alert(`Error: ${message}`),
-};
 
 // Maximum number of images allowed per listing
 const MAX_IMAGES = 10;
 
 export function ListingForm({ listingId, onBack }) {
+  const toast = useToast();
   const isEditing = !!listingId;
 
   const [formData, setFormData] = useState({

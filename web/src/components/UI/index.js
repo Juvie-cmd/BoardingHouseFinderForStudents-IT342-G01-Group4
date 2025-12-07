@@ -4,3 +4,4 @@ export { FormGroup, FormInput, FormSelect, FormTextarea } from './FormInput';
 export { Badge } from './Badge';
 export { Alert } from './Alert';
 export { ToggleSwitch } from './ToggleSwitch';
+export { ToastProvider, useToast } from './Toast';

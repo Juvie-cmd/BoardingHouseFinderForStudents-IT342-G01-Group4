@@ -3,6 +3,7 @@ import API from "../../api/api";
 import { ImageWithFallback } from "../../components/Shared/ImageWithFallback";
 import { LocationSearchInput } from "../../components/Shared/LocationSearchInput";
 import { ListingsMap } from "../../components/Shared/ListingsMap";
+import { useToast } from "../../components/UI";
 import {
   LocationIcon,
   HomeIcon,
@@ -17,6 +18,7 @@ import {
 import "./styles/StudentDashboard.css";
 
 export function StudentDashboard({ onViewDetails }) {
+  const toast = useToast();
   // Tab state
   const [activeTab, setActiveTab] = useState("search");
 
@@ -143,7 +145,7 @@ export function StudentDashboard({ onViewDetails }) {
     } catch (err) {
       console.error("Error toggling favorite:", err);
       if (err.response?.status === 401 || err.response?.status === 403) {
-        alert("Please log in as a student to save favorites");
+        toast.warning("Please log in as a student to save favorites");
       }
     }
   };
