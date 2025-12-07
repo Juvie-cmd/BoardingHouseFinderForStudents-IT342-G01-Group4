@@ -93,7 +93,7 @@ Navigate to the backend folder:
 cd backend
 ```
 
-You MUST CREATE application.properties file and Configure `src/main/resources/application.properties`:
+**3. You MUST CREATE your own application.properties** file and Configure `src/main/resources/application.properties`:
 - Set your MySQL database credentials
 - Set your Google OAuth2 credentials
 - Set your JWT secret key
@@ -105,7 +105,7 @@ Run the backend:
 
 The backend will start at `http://localhost:8080`
 
-### 💻 3. Web Frontend (React)
+### 💻 4. Web Frontend (React)
 
 Navigate to the web folder:
 ```bash
@@ -127,7 +127,7 @@ npm run dev
 
 The frontend will start at `http://localhost:5173`
 
-### 📱 4. Mobile App (Android)
+### 📱 5. Mobile App (Android)
 
 Open the `mobile` folder in Android Studio and run on an emulator or device.
 
