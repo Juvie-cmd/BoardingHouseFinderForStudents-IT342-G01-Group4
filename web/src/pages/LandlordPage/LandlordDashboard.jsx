@@ -354,11 +354,8 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                           </div>
                         </div>
                         <div className="listing-item-actions">
-                          <button className="button button-secondary button-small" onClick={() => onEditListing(listing.id)}>
+                          <button className="button button-teal button-small" onClick={() => onEditListing(listing.id)}>
                             <span className="icon"><EditIcon size={16} /></span> {listing.status === 'REJECTED' ? 'Edit & Resubmit' : 'Edit'}
-                          </button>
-                          <button className="button button-secondary button-small">
-                            <span className="icon"><EyeIcon size={16} /></span> View
                           </button>
                           <button className="button button-danger button-small" onClick={() => handleDeleteListing(listing)}>
                             <span className="icon"><TrashIcon size={16} /></span> Delete

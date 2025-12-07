@@ -242,10 +242,10 @@ export function AdminDashboard() {
       field: 'actions',
       render: (user) => (
         <div className="user-actions">
-          <button className="button button-success button-small" onClick={() => handleEditUser(user)}>
+          <button className="button button-success button-small admin-action-btn" onClick={() => handleEditUser(user)}>
             <span className="icon"><EditIcon size={16} /></span> Edit
           </button>
-          <button className="button button-danger button-small" onClick={() => handleDeleteUser(user)}>
+          <button className="button button-danger button-small admin-action-btn" onClick={() => handleDeleteUser(user)}>
             <span className="icon"><TrashIcon size={16} /></span> Delete
           </button>
         </div>
