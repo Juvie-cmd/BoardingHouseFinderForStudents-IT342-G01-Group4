@@ -6,7 +6,7 @@
   padding: 1rem 0;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 1100; /* Higher than Leaflet map z-index (1000) to prevent map overlapping navbar */
 }
 .header-content {
   display: flex;

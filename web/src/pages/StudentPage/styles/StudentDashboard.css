@@ -320,7 +320,7 @@
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 60px; /* Below header */
-  z-index: 5;
+  z-index: 1050; /* Higher than Leaflet map (1000) but lower than header (1100) */
 }
 
 .dashboard-tabs {
