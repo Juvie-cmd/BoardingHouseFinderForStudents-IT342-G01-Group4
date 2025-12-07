@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Profile, StatsCard } from '../../components/Profile';
-import { FormInput, FormTextarea, Badge } from '../../components/UI';
+import { FormInput, FormTextarea, Badge, ChangePasswordModal } from '../../components/UI';
 import { HomeIcon, UsersIcon, MoneyIcon, StarIcon } from '../../components/Shared/Icons';
 import './styles/Profile.css';
 
 export function LandlordProfile() {
   const { user, updateProfile } = useAuth();
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const initialFormData = {
     name: user?.name || '',
@@ -39,27 +41,27 @@ export function LandlordProfile() {
       title: 'Change Password',
       description: 'Update your password to keep your account secure',
       type: 'button',
-      action: { label: 'Change', onClick: () => console.log('Change password') }
+      action: { label: 'Change', onClick: () => setShowPasswordModal(true) }
     },
     {
       title: 'Email Notifications',
       description: 'Receive updates about inquiries and bookings',
       type: 'toggle',
       checked: true,
-      onChange: (e) => console.log('Toggle email:', e.target.checked)
+      disabled: true
     },
     {
       title: 'SMS Notifications',
       description: 'Get text messages for urgent matters',
       type: 'toggle',
       checked: false,
-      onChange: (e) => console.log('Toggle SMS:', e.target.checked)
+      disabled: true
     },
     {
       title: 'Verification Status',
-      description: 'Verify your identity to build tenant trust',
+      description: 'Your identity has been verified',
       type: 'badge',
-      badge: <Badge variant="warning">Pending</Badge>
+      badge: <Badge variant="success">Verified</Badge>
     }
   ];
 
@@ -169,17 +171,23 @@ export function LandlordProfile() {
   const sidebar = <StatsCard title="Your Statistics" stats={statsData} />;
 
   return (
-    <Profile
-      role="Landlord"
-      roleVariant="success"
-      headerTitle="Landlord Profile"
-      headerSubtitle="Manage your business profile and settings"
-      initialFormData={initialFormData}
-      formFields={formFields}
-      settingsItems={settingsItems}
-      sidebar={sidebar}
-      variant="landlord"
-      onSubmit={updateProfile} // ✅ Backend integration
-    />
+    <>
+      <Profile
+        role="Landlord"
+        roleVariant="success"
+        headerTitle="Landlord Profile"
+        headerSubtitle="Manage your business profile and settings"
+        initialFormData={initialFormData}
+        formFields={formFields}
+        settingsItems={settingsItems}
+        sidebar={sidebar}
+        variant="landlord"
+        onSubmit={updateProfile} // ✅ Backend integration
+      />
+      <ChangePasswordModal 
+        isOpen={showPasswordModal} 
+        onClose={() => setShowPasswordModal(false)} 
+      />
+    </>
   );
 }

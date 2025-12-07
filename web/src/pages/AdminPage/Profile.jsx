@@ -1,11 +1,12 @@
 import { useAuth } from '../../context/AuthContext';
 import { Profile, StatsCard, ActivityCard } from '../../components/Profile';
-import { FormInput, FormSelect, FormTextarea } from '../../components/UI';
+import { FormInput, FormSelect, FormTextarea, useToast } from '../../components/UI';
 import { UsersIcon, HomeIcon, WarningIcon, CheckIcon } from '../../components/Shared/Icons';
 import './styles/Profile.css';
 
 export function AdminProfile() {
   const { user, updateProfile } = useAuth();
+  const toast = useToast();
 
   const initialFormData = {
     name: user?.name || '',
@@ -47,36 +48,37 @@ export function AdminProfile() {
   const settingsItems = [
     {
       title: 'Change Password',
-      description: 'Update your password to keep your account secure',
+      description: 'Admin password is managed by the system',
       type: 'button',
-      action: { label: 'Change', onClick: () => console.log('Change password') }
+      action: { label: 'Change', onClick: () => toast.error('Password changes for Administrator accounts are restricted for security reasons.') }
     },
     {
       title: 'Two-Factor Authentication',
       description: 'Add an extra layer of security to your account',
       type: 'toggle',
       checked: true,
-      onChange: (e) => console.log('Toggle 2FA:', e.target.checked)
+      disabled: true
     },
     {
       title: 'Login Alerts',
       description: 'Get notified of new login attempts',
       type: 'toggle',
       checked: true,
-      onChange: (e) => console.log('Toggle login alerts:', e.target.checked)
+      disabled: true
     },
     {
       title: 'Admin Activity Log',
       description: 'View detailed logs of your administrative actions',
       type: 'button',
-      action: { label: 'View Logs', onClick: () => console.log('View logs') }
+      action: { label: 'View Logs' },
+      disabled: true
     },
     {
       title: 'System Notifications',
       description: 'Receive alerts for critical system events',
       type: 'toggle',
       checked: true,
-      onChange: (e) => console.log('Toggle system notifications:', e.target.checked)
+      disabled: true
     }
   ];
 

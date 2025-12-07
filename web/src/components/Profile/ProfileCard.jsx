@@ -6,6 +6,7 @@ export function ProfileCard({
   user,
   profileImage,
   onImageUpload,
+  uploadingImage = false,
   role,
   roleVariant = 'primary',
   additionalInfo,
@@ -15,7 +16,7 @@ export function ProfileCard({
     <Card className="profile-card">
       <CardContent>
         <div className="profile-image-section">
-          <div className="profile-image-wrapper">
+          <div className={`profile-image-wrapper ${uploadingImage ? 'uploading' : ''}`}>
             {profileImage ? (
               <img src={profileImage} alt="Profile" className="profile-image" />
             ) : (
@@ -25,16 +26,25 @@ export function ProfileCard({
                 </span>
               </div>
             )}
+            {uploadingImage && (
+              <div className="profile-image-uploading-overlay">
+                <span className="uploading-spinner"></span>
+              </div>
+            )}
           </div>
           <input
             type="file"
             id="profile-image-upload"
             accept="image/*"
             onChange={onImageUpload}
+            disabled={uploadingImage}
             style={{ display: 'none' }}
           />
-          <label htmlFor="profile-image-upload" className="button button-secondary button-small">
-            Change Photo
+          <label 
+            htmlFor="profile-image-upload" 
+            className={`button button-secondary button-small ${uploadingImage ? 'disabled' : ''}`}
+          >
+            {uploadingImage ? 'Uploading...' : 'Change Photo'}
           </label>
         </div>
 

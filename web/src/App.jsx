@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AppRoutes } from './routes';
 import { Header } from "./components/Shared/Header";
 import { ErrorBoundary } from "./components/Shared/ErrorBoundary";
+import { ToastProvider } from "./components/UI";
 
 import "./App.css"; 
 
@@ -57,7 +58,9 @@ export default function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <AppContent />
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

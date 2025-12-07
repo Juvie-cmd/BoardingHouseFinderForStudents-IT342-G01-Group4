@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import API from '../../api/api';
 import { Dashboard, StatCard, PerformanceList, DataTable } from '../../components/Dashboard';
 import { UsersIcon, HomeIcon, CheckIcon, LocationIcon, StarIcon, CloseIcon, SearchIcon, GraduationIcon, BuildingIcon, EditIcon, TrashIcon } from '../../components/Shared/Icons';
+import { useToast } from '../../components/UI';
 import './styles/AdminDashboard.css';
 
 const ImageWithFallback = ({ src, alt, className }) => {
@@ -20,6 +21,7 @@ const ImageWithFallback = ({ src, alt, className }) => {
 };
 
 export function AdminDashboard() {
+  const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState([]);
   const [listings, setListings] = useState([]);
@@ -92,11 +94,11 @@ export function AdminDashboard() {
         setUsers(users.map(u => u.id === editingUser. id ? res.data : u));
         setEditingUser(null);
         setEditForm({ name: '', email: '', role: '', active: true });
-        alert('User updated successfully! ');
+        toast.success('User updated successfully!');
       })
       .catch(err => {
         console.error('Failed to save user', err);
-        alert('Failed to save user: ' + (err.response?.data?.message || err.message));
+        toast.error('Failed to save user: ' + (err.response?.data?.message || err.message));
       });
   };
 
@@ -107,11 +109,11 @@ export function AdminDashboard() {
       .then(() => {
         setUsers(users. filter(u => u.id !== deleteConfirm.id));
         setDeleteConfirm(null);
-        alert('User deleted successfully!');
+        toast.success('User deleted successfully!');
       })
       . catch(err => {
         console.error('Delete failed', err);
-        alert('Delete failed: ' + (err.response?.data?.message || err. message));
+        toast.error('Delete failed: ' + (err.response?.data?.message || err. message));
       });
   };
   
@@ -122,11 +124,11 @@ export function AdminDashboard() {
     API.put(`/admin/listing/${id}/approve`)
       .then(() => {
         setListings(listings.map(l => l.id === id ? { ...l, status: 'APPROVED', available: true, rejectionNotes: null } : l));
-        alert('Listing approved successfully!');
+        toast.success('Listing approved successfully!');
       })
       .catch(err => {
         console.error('Approve failed', err);
-        alert('Approve failed: ' + (err.response?.data?.message || err.message));
+        toast.error('Approve failed: ' + (err.response?.data?.message || err.message));
       });
   };
 
@@ -141,11 +143,11 @@ export function AdminDashboard() {
         setListings(listings.map(l => l.id === rejectingListing.id ? { ...l, status: 'REJECTED', available: false, rejectionNotes } : l));
         setRejectingListing(null);
         setRejectionNotes('');
-        alert('Listing rejected. Landlord will be notified with your notes.');
+        toast.success('Listing rejected. Landlord will be notified.');
       })
       .catch(err => {
         console.error('Reject failed', err);
-        alert('Reject failed: ' + (err.response?.data?.message || err.message));
+        toast.error('Reject failed: ' + (err.response?.data?.message || err.message));
       });
   };
 
@@ -161,11 +163,11 @@ export function AdminDashboard() {
       .then(() => {
         setListings(listings.filter(l => l.id !== deleteListingConfirm.id));
         setDeleteListingConfirm(null);
-        alert('Listing deleted successfully!');
+        toast.success('Listing deleted successfully!');
       })
       .catch(err => {
         console.error('Delete listing failed', err);
-        alert('Delete failed: ' + (err.response?.data?.message || err.message));
+        toast.error('Delete failed: ' + (err.response?.data?.message || err.message));
       });
   };
   
@@ -240,10 +242,10 @@ export function AdminDashboard() {
       field: 'actions',
       render: (user) => (
         <div className="user-actions">
-          <button className="button button-success button-small" onClick={() => handleEditUser(user)}>
+          <button className="button button-success button-small admin-action-btn" onClick={() => handleEditUser(user)}>
             <span className="icon"><EditIcon size={16} /></span> Edit
           </button>
-          <button className="button button-danger button-small" onClick={() => handleDeleteUser(user)}>
+          <button className="button button-danger button-small admin-action-btn" onClick={() => handleDeleteUser(user)}>
             <span className="icon"><TrashIcon size={16} /></span> Delete
           </button>
         </div>

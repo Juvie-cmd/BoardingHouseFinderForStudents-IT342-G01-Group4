@@ -19,6 +19,8 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String...  args) {
         createAdminIfNotExists();
+        createTestLandlordIfNotExists();
+        createTestStudentIfNotExists();
     }
 
     private void createAdminIfNotExists() {
@@ -45,5 +47,55 @@ public class DataInitializer implements CommandLineRunner {
         log.info("   Email: {}", adminEmail);
         log.info("   Password: admin123");
         log.info("   ⚠️  Please change this password in production!");
+    }
+
+    private void createTestLandlordIfNotExists() {
+        String landlordEmail = "landlord@test.com";
+        
+        // Check if landlord already exists
+        if (userRepository.existsByEmail(landlordEmail)) {
+            log.info("Test landlord account already exists: {}", landlordEmail);
+            return;
+        }
+
+        // Create test landlord account
+        User landlord = User.builder()
+                .name("Test Landlord")
+                .email(landlordEmail)
+                .password(passwordEncoder.encode("landlord123"))  // Password: landlord123
+                .role("landlord")
+                .authProvider("LOCAL")
+                .active(true)
+                .build();
+
+        userRepository.save(landlord);
+        log.info("✅ Test landlord account created successfully!");
+        log.info("   Email: {}", landlordEmail);
+        log.info("   Password: landlord123");
+    }
+
+    private void createTestStudentIfNotExists() {
+        String studentEmail = "student@test.com";
+        
+        // Check if student already exists
+        if (userRepository.existsByEmail(studentEmail)) {
+            log.info("Test student account already exists: {}", studentEmail);
+            return;
+        }
+
+        // Create test student account
+        User student = User.builder()
+                .name("Test Student")
+                .email(studentEmail)
+                .password(passwordEncoder.encode("student123"))  // Password: student123
+                .role("student")
+                .authProvider("LOCAL")
+                .active(true)
+                .build();
+
+        userRepository.save(student);
+        log.info("✅ Test student account created successfully!");
+        log.info("   Email: {}", studentEmail);
+        log.info("   Password: student123");
     }
 }

@@ -3,10 +3,12 @@ import { useState, useEffect } from 'react';
 import API from '../../api/api';
 import { ImageWithFallback } from '../../components/Shared/ImageWithFallback';
 import { Map } from '../../components/Shared/Map';
+import { useToast } from '../../components/UI';
 import { LinkIcon, StarIcon, UsersIcon, CalendarIcon, CheckIcon, LocationIcon, ArrowLeftIcon, CloseIcon, HeartIcon } from '../../components/Shared/Icons';
 import './styles/ListingDetails.css';
 
 export function ListingDetails({ listingId, onBack }) {
+  const toast = useToast();
   const [listing, setListing] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -104,7 +106,7 @@ export function ListingDetails({ listingId, onBack }) {
     } catch (err) {
       console.error("Error toggling favorite:", err);
       if (err.response?.status === 401 || err.response?.status === 403) {
-        alert("Please log in as a student to save favorites");
+        toast.warning("Please log in as a student to save favorites");
       }
     }
   };
@@ -112,7 +114,7 @@ export function ListingDetails({ listingId, onBack }) {
   // Submit rating
   const handleSubmitRating = async () => {
     if (userRating === 0) {
-      alert('Please select a rating');
+      toast.warning('Please select a rating');
       return;
     }
     
@@ -134,13 +136,13 @@ export function ListingDetails({ listingId, onBack }) {
         setHasExistingRating(true);
       }
       
-      alert('Rating submitted successfully!');
+      toast.success('Rating submitted successfully!');
     } catch (err) {
       console.error('Failed to submit rating:', err);
       if (err.response?.status === 401 || err.response?.status === 403) {
-        alert("Please log in as a student to rate properties");
+        toast.warning("Please log in as a student to rate properties");
       } else {
-        alert('Failed to submit rating');
+        toast.error('Failed to submit rating');
       }
     } finally {
       setSubmittingRating(false);
@@ -151,7 +153,7 @@ export function ListingDetails({ listingId, onBack }) {
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!messageText.trim()) {
-      alert('Please enter a message');
+      toast.warning('Please enter a message');
       return;
     }
     
@@ -162,13 +164,13 @@ export function ListingDetails({ listingId, onBack }) {
       message: messageText
     })
       .then(() => {
-        alert('Message sent successfully! The landlord will receive your inquiry.');
+        toast.success('Message sent successfully!');
         setMessageText('');
         setShowMessageModal(false);
       })
       .catch((err) => {
         console.error('Failed to send message', err);
-        alert('Failed to send message. Please make sure you are logged in as a student.');
+        toast.error('Failed to send message. Please make sure you are logged in.');
       })
       .finally(() => setSendingMessage(false));
   };
@@ -177,7 +179,7 @@ export function ListingDetails({ listingId, onBack }) {
   const handleRequestVisit = (e) => {
     e.preventDefault();
     if (!visitDate) {
-      alert('Please select a preferred date');
+      toast.warning('Please select a preferred date');
       return;
     }
     
@@ -190,14 +192,14 @@ export function ListingDetails({ listingId, onBack }) {
       notes: visitNotes
     })
       .then(() => {
-        alert('Visit request sent successfully! The landlord will review your request.');
+        toast.success('Visit request sent successfully!');
         setVisitDate('');
         setVisitTime('');
         setVisitNotes('');
       })
       .catch((err) => {
         console.error('Failed to request visit', err);
-        alert('Failed to send visit request. Please make sure you are logged in as a student.');
+        toast.error('Failed to send visit request. Please make sure you are logged in.');
       })
       .finally(() => setSendingVisitRequest(false));
   };

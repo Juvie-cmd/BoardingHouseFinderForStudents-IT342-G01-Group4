@@ -6,7 +6,7 @@
   padding: 1rem 0;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 1100; /* Higher than Leaflet map z-index (1000) to prevent map overlapping navbar */
 }
 .header-content {
   display: flex;
@@ -28,6 +28,37 @@
 .header-nav { display: flex; align-items: center; gap: 1rem; }
 .header-user-menu { display: flex; align-items: center; gap: 1rem; }
 .header-user-menu span { font-size: 0.875rem; font-weight: 500; }
+
+/* --- Header User Avatar --- */
+.header-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-hover) 100%);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.header-user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.header-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header-avatar-initials {
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
 
 /* --- Button Link Styles --- */
 .button-link {

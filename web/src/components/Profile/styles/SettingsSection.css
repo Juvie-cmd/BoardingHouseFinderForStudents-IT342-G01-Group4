@@ -86,3 +86,14 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Disabled settings item */
+.settings-item-disabled {
+  opacity: 0.6;
+}
+
+.settings-item-disabled .button {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}

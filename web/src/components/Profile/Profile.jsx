@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ProfileLayout, ProfileGrid, ProfileCard, SettingsSection } from './index';
-import { Card, CardHeader, CardContent, Alert } from '../UI';
+import { Card, CardHeader, CardContent, Alert, useToast } from '../UI';
+import { uploadImage } from '../../utils/supabaseClient';
 
 /**
  * Reusable Profile Component with backend integration
@@ -21,6 +22,7 @@ export function Profile({
   layoutVariant
 }) {
   const { user, fetchProfile, updateProfile } = useAuth();
+  const toast = useToast();
 
   const buildFormDataFromUser = (userData, defaultData) => {
     if (!defaultData) {
@@ -50,7 +52,8 @@ export function Profile({
   });
 
   const [isEditing, setIsEditing] = useState(false);
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState(user?.profileImage || null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -61,6 +64,9 @@ export function Profile({
         const profileData = await fetchProfile();
         if (profileData) {
           setFormData(buildFormDataFromUser(profileData, initialFormData));
+          if (profileData.profileImage) {
+            setProfileImage(profileData.profileImage);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch profile:', err);
@@ -74,6 +80,9 @@ export function Profile({
       loadProfile();
     } else {
       setFormData(buildFormDataFromUser(user, initialFormData));
+      if (user.profileImage) {
+        setProfileImage(user.profileImage);
+      }
       setLoading(false);
     }
   }, []);
@@ -81,6 +90,9 @@ export function Profile({
   useEffect(() => {
     if (user && initialFormData) {
       setFormData(buildFormDataFromUser(user, initialFormData));
+    }
+    if (user?.profileImage) {
+      setProfileImage(user.profileImage);
     }
   }, [user, initialFormData]);
 
@@ -90,14 +102,50 @@ export function Profile({
     });
   };
 
-  const handleImageUpload = (e) => {
-    const file = e. target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = function() {
-        setProfileImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file.');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB.');
+      return;
+    }
+
+    setUploadingImage(true);
+    setError('');
+
+    try {
+      // Upload to Supabase Storage
+      console.log('Uploading image to Supabase...', file.name);
+      const { url, error: uploadError } = await uploadImage(file, 'profile-images');
+      
+      if (uploadError) {
+        console.error('Supabase upload error:', uploadError);
+        throw uploadError;
+      }
+
+      if (url) {
+        console.log('Image uploaded successfully:', url);
+        // Update local state immediately for preview
+        setProfileImage(url);
+        
+        // Save to backend
+        console.log('Saving profile image URL to backend...');
+        await updateProfile({ profileImage: url });
+        console.log('Profile updated successfully');
+      }
+    } catch (err) {
+      console.error('Image upload failed:', err);
+      setError('Failed to upload image: ' + (err.message || 'Please try again.'));
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -112,6 +160,7 @@ export function Profile({
         await updateProfile(formData);
       }
       setIsEditing(false);
+      toast.success('Profile Information Updated');
     } catch (err) {
       console.error('Profile update failed:', err);
       setError('Failed to update profile. Please try again.');
@@ -134,6 +183,7 @@ export function Profile({
             user={formData}
             profileImage={profileImage}
             onImageUpload={handleImageUpload}
+            uploadingImage={uploadingImage}
             role={role}
             roleVariant={roleVariant}
             variant={variant}

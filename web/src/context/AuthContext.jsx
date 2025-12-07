@@ -3,9 +3,13 @@ import { createContext, useContext, useState, useEffect } from "react";
 const AuthContext = createContext();
 const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:8080") + "/api";
 
+// Use sessionStorage instead of localStorage to allow different roles in different tabs
+// Each browser tab will have its own independent session
+const storage = sessionStorage;
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const [token, setToken] = useState(storage.getItem("token") || null);
   const [isLoading, setIsLoading] = useState(false);
   const isAuthenticated = token ?  true : false;
 
@@ -25,11 +29,11 @@ export function AuthProvider({ children }) {
 
       const data = await res.json();
       setToken(data.token);
-      localStorage.setItem("token", data.token);
+      storage.setItem("token", data.token);
 
       const userData = { email: data.email, role: data.role, name: data.name, id: data.id };
       setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
+      storage.setItem("user", JSON.stringify(userData));
 
       return data;
     } catch (error) {
@@ -56,11 +60,11 @@ export function AuthProvider({ children }) {
 
       const data = await res.json();
       setToken(data.token);
-      localStorage.setItem("token", data.token);
+      storage.setItem("token", data.token);
 
       var basicUserData = { email: data.email, role: data.role, name: data.name, id: data.id };
       setUser(basicUserData);
-      localStorage.setItem("user", JSON.stringify(basicUserData));
+      storage.setItem("user", JSON.stringify(basicUserData));
 
       try {
         const profileRes = await fetch(API_BASE + "/profile", {
@@ -73,7 +77,7 @@ export function AuthProvider({ children }) {
         if (profileRes.ok) {
           const profileData = await profileRes.json();
           setUser(profileData);
-          localStorage.setItem("user", JSON.stringify(profileData));
+          storage.setItem("user", JSON.stringify(profileData));
         }
       } catch (profileError) {
         console.warn("Failed to fetch full profile after login:", profileError);
@@ -97,11 +101,11 @@ export function AuthProvider({ children }) {
     var picture = params.picture;
 
     setToken(authToken);
-    localStorage.setItem("token", authToken);
+    storage.setItem("token", authToken);
 
     var userData = { email: email, name: name, role: role, id: Number(id), picture: picture };
     setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
+    storage.setItem("user", JSON.stringify(userData));
 
     if (authToken) {
       try {
@@ -115,7 +119,7 @@ export function AuthProvider({ children }) {
         if (res.ok) {
           const profileData = await res.json();
           setUser(profileData);
-          localStorage.setItem("user", JSON.stringify(profileData));
+          storage.setItem("user", JSON.stringify(profileData));
         }
       } catch (err) {
         console.warn("Failed to fetch profile after Google login:", err);
@@ -144,7 +148,7 @@ export function AuthProvider({ children }) {
 
       const data = await res.json();
       setUser(data);
-      localStorage.setItem("user", JSON.stringify(data));
+      storage.setItem("user", JSON.stringify(data));
       return data;
     } catch (error) {
       console.error("Fetch profile error:", error);
@@ -172,7 +176,7 @@ export function AuthProvider({ children }) {
 
       const data = await res.json();
       setUser(data);
-      localStorage.setItem("user", JSON.stringify(data));
+      storage.setItem("user", JSON.stringify(data));
       return data;
     } catch (error) {
       console.error("Update profile error:", error);
@@ -183,12 +187,12 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    storage.removeItem("token");
+    storage.removeItem("user");
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = storage.getItem("user");
     if (storedUser && !user) {
       setUser(JSON.parse(storedUser));
     } else if (token && !user) {

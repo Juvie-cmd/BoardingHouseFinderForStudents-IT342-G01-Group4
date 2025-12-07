@@ -92,6 +92,9 @@ public class User implements UserDetails {
     @Column(length = 50)
     private String employeeId;
 
+    @Column(length = 500)
+    private String profileImage;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

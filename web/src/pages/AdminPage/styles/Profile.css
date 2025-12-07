@@ -102,19 +102,6 @@
   background: #94a3b8;
 } */
 
-/* Make stats and activity cards sticky while profile card scrolls */
-.stats-card {
-  position: sticky;
-  top: 2rem;
-  z-index: 1;
-}
-
-.activity-card {
-  position: sticky;
-  top: calc(2rem + 0px); /* Will stack below stats card if needed */
-  z-index: 1;
-}
-
 /* --- Profile Card --- */
 .profile-card {
   height: fit-content;

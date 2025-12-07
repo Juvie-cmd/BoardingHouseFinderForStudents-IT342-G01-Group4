@@ -4,9 +4,11 @@ import API from '../../api/api';
 import { ImageWithFallback } from '../../components/Shared/ImageWithFallback';
 import { Dashboard, StatCard, PerformanceList, DataTable } from '../../components/Dashboard';
 import { HomeIcon, StarIcon, EyeIcon, MessageIcon, ChartIcon, EditIcon, LocationIcon, PlusIcon, BarChartIcon, TrashIcon, CloseIcon } from '../../components/Shared/Icons';
+import { useToast } from '../../components/UI';
 import './styles/LandlordDashboard.css';
 
 export function LandlordDashboard({ onCreateListing, onEditListing }) {
+  const toast = useToast();
   const [myListings, setMyListings] = useState([]);
   const [recentInquiries, setRecentInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -82,11 +84,11 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
       .then(() => {
         setMyListings(myListings.filter(l => l.id !== deleteConfirm.id));
         setDeleteConfirm(null);
-        alert('Listing deleted successfully!');
+        toast.success('Listing deleted successfully!');
       })
       .catch(err => {
         console.error('Delete listing failed', err);
-        alert('Delete failed: ' + (err.response?.data?.message || err.message));
+        toast.error('Delete failed: ' + (err.response?.data?.message || err.message));
       });
   };
 
@@ -100,7 +102,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
 
   const sendReply = async () => {
     if (!replyText.trim()) {
-      alert('Please enter a reply message');
+      toast.warning('Please enter a reply message');
       return;
     }
     
@@ -113,10 +115,10 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
       ));
       setReplyingTo(null);
       setReplyText('');
-      alert('Reply sent successfully!');
+      toast.success('Reply sent successfully!');
     } catch (err) {
       console.error('Failed to send reply:', err);
-      alert('Failed to send reply: ' + (err.response?.data?.message || err.message));
+      toast.error('Failed to send reply: ' + (err.response?.data?.message || err.message));
     } finally {
       setSendingReply(false);
     }
@@ -152,7 +154,7 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'listings', label: 'My Listings' },
-    { id: 'inquiries', label: 'Inquiries' },
+    { id: 'inquiries', label: 'Inquiries', badge: stats.newInquiries > 0 ? stats.newInquiries : null, badgeClass: 'badge-danger badge-large' },
     { id: 'analytics', label: 'Analytics' },
   ];
 
@@ -352,11 +354,8 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                           </div>
                         </div>
                         <div className="listing-item-actions">
-                          <button className="button button-secondary button-small" onClick={() => onEditListing(listing.id)}>
+                          <button className="button button-teal button-small" onClick={() => onEditListing(listing.id)}>
                             <span className="icon"><EditIcon size={16} /></span> {listing.status === 'REJECTED' ? 'Edit & Resubmit' : 'Edit'}
-                          </button>
-                          <button className="button button-secondary button-small">
-                            <span className="icon"><EyeIcon size={16} /></span> View
                           </button>
                           <button className="button button-danger button-small" onClick={() => handleDeleteListing(listing)}>
                             <span className="icon"><TrashIcon size={16} /></span> Delete

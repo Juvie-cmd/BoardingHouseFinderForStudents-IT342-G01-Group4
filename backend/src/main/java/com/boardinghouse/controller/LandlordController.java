@@ -55,6 +55,21 @@ public class LandlordController {
         return listingService.toResponseList(listings);
     }
 
+    // ⭐ Get a single listing by ID (for editing - returns any status for the owner)
+    @PreAuthorize("hasRole('LANDLORD')")
+    @GetMapping("/listing/{id}")
+    public ResponseEntity<ListingResponse> getListingForEdit(@PathVariable Long id, Authentication authentication) {
+        User landlord = (User) authentication.getPrincipal();
+        Listing listing = listingService.getById(id);
+        
+        // Ensure the landlord owns this listing
+        if (!listing.getLandlord().getId().equals(landlord.getId())) {
+            throw new RuntimeException("You can only edit your own listings");
+        }
+        
+        return ResponseEntity.ok(listingService.toResponse(listing));
+    }
+
     @PutMapping("/listing/{id}")
     public ListingResponse updateListing(@PathVariable Long id, @RequestBody ListingRequest request, Authentication authentication) {
         // Authorization: ensure the authenticated landlord owns the listing (optional extra check)
