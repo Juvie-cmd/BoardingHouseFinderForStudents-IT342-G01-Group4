@@ -27,12 +27,17 @@ export function ListingForm({ listingId, onBack }) {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Load listing when editing
   useEffect(() => {
     if (!isEditing || !listingId) return;
     setLoading(true);
 
-    API.get(`/student/listing/${listingId}`)
+    API.get(`/landlord/listing/${listingId}`)
       .then(res => {
         const l = res.data;
         const imgs = l.imageList
