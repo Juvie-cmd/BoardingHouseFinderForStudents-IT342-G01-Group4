@@ -14,5 +14,5 @@ export function ListingDetailsWrapper() {
      return <Navigate to="/search" replace />;
   }
 
-  return <ListingDetails listingId={idAsNumber} onBack={() => navigate(-1)} />;
+  return <ListingDetails listingId={idAsNumber} onBack={() => navigate('/search')} />;
 }
