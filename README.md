@@ -93,7 +93,7 @@ Navigate to the backend folder:
 cd backend
 ```
 
-Configure `src/main/resources/application.properties`:
+You MUST CREATE application.properties file and Configure `src/main/resources/application.properties`:
 - Set your MySQL database credentials
 - Set your Google OAuth2 credentials
 - Set your JWT secret key
