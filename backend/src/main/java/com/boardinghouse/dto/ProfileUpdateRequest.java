@@ -8,6 +8,7 @@ public class ProfileUpdateRequest {
     private String name;
     private String phone;
     private String bio;
+    private String profileImage;
 
     // Student-specific fields
     private String university;

@@ -109,6 +109,19 @@ export function Header({ favorites = [], onNavigate }) {
           )}
 
           <div className="header-user-menu">
+            <div className="header-user-avatar" onClick={() => onNavigate('profile')}>
+              {user.profileImage || user.picture ? (
+                <img 
+                  src={user.profileImage || user.picture} 
+                  alt={user.name} 
+                  className="header-avatar-image"
+                />
+              ) : (
+                <span className="header-avatar-initials">
+                  {user.name?.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
             <span>Hi, {user.name}</span>
             <button
               className="button button-secondary"

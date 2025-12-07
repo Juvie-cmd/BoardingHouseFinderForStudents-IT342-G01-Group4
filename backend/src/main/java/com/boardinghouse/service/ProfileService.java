@@ -45,6 +45,9 @@ public class ProfileService {
         if (request.getBio() != null) {
             user.setBio(request.getBio());
         }
+        if (request.getProfileImage() != null) {
+            user.setProfileImage(request.getProfileImage());
+        }
 
         // Update role-specific fields
         switch (user.getRole().toLowerCase()) {
@@ -105,6 +108,7 @@ public class ProfileService {
                 .role(user.getRole())
                 .phone(user.getPhone())
                 .bio(user.getBio())
+                .profileImage(user.getProfileImage())
                 // Student fields
                 .university(user.getUniversity())
                 .yearOfStudy(user.getYearOfStudy())

@@ -35,10 +35,11 @@ function generateUniqueFileName(originalName) {
 /**
  * Upload a file to Supabase Storage
  * @param {File} file - The file to upload
- * @param {string} bucket - The storage bucket name (e.g., 'listing-images')
+ * @param {string} bucket - The storage bucket name (e.g., 'listing-images', 'profile-images')
+ * @param {string} folder - The folder path within the bucket (e.g., 'listings', 'profiles')
  * @returns {Promise<{url: string | null, error: Error | null}>}
  */
-export async function uploadImage(file, bucket = 'listing-images') {
+export async function uploadImage(file, bucket = 'listing-images', folder = null) {
   if (!supabase) {
     return { 
       url: null, 
@@ -49,7 +50,9 @@ export async function uploadImage(file, bucket = 'listing-images') {
   try {
     // Generate a unique file name using UUID for collision resistance
     const fileName = generateUniqueFileName(file.name);
-    const filePath = `listings/${fileName}`;
+    // Use provided folder or default based on bucket name
+    const folderPath = folder || (bucket === 'profile-images' ? 'profiles' : 'listings');
+    const filePath = `${folderPath}/${fileName}`;
 
     // Upload the file
     const { error: uploadError } = await supabase.storage
