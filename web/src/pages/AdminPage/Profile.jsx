@@ -57,27 +57,28 @@ export function AdminProfile() {
       description: 'Add an extra layer of security to your account',
       type: 'toggle',
       checked: true,
-      onChange: (e) => console.log('Toggle 2FA:', e.target.checked)
+      disabled: true
     },
     {
       title: 'Login Alerts',
       description: 'Get notified of new login attempts',
       type: 'toggle',
       checked: true,
-      onChange: (e) => console.log('Toggle login alerts:', e.target.checked)
+      disabled: true
     },
     {
       title: 'Admin Activity Log',
       description: 'View detailed logs of your administrative actions',
       type: 'button',
-      action: { label: 'View Logs', onClick: () => console.log('View logs') }
+      action: { label: 'View Logs' },
+      disabled: true
     },
     {
       title: 'System Notifications',
       description: 'Receive alerts for critical system events',
       type: 'toggle',
       checked: true,
-      onChange: (e) => console.log('Toggle system notifications:', e.target.checked)
+      disabled: true
     }
   ];
 

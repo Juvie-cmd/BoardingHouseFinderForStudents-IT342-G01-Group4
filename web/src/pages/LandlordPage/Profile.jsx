@@ -48,20 +48,20 @@ export function LandlordProfile() {
       description: 'Receive updates about inquiries and bookings',
       type: 'toggle',
       checked: true,
-      onChange: (e) => console.log('Toggle email:', e.target.checked)
+      disabled: true
     },
     {
       title: 'SMS Notifications',
       description: 'Get text messages for urgent matters',
       type: 'toggle',
       checked: false,
-      onChange: (e) => console.log('Toggle SMS:', e.target.checked)
+      disabled: true
     },
     {
       title: 'Verification Status',
-      description: 'Verify your identity to build tenant trust',
+      description: 'Your identity has been verified',
       type: 'badge',
-      badge: <Badge variant="warning">Pending</Badge>
+      badge: <Badge variant="success">Verified</Badge>
     }
   ];
 

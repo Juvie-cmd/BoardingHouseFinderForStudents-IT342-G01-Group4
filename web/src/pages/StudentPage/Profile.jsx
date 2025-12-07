@@ -46,13 +46,14 @@ export function StudentProfile() {
       description: 'Receive updates about new listings and messages',
       type: 'toggle',
       checked: true,
-      onChange: (e) => console.log('Toggle notifications:', e.target.checked)
+      disabled: true
     },
     {
       title: 'Account Privacy',
       description: 'Control who can see your profile information',
       type: 'button',
-      action: { label: 'Manage', onClick: () => console.log('Manage privacy') }
+      action: { label: 'Manage' },
+      disabled: true
     }
   ];
 
