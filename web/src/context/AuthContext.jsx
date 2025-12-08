@@ -55,7 +55,9 @@ export function AuthProvider({ children }) {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Invalid email or password");
+        const serverMessage = errorData.message || "Invalid email or password";
+        const displayMessage = serverMessage === "Bad credentials" ? "Invalid Credentials" : serverMessage;
+        throw new Error(displayMessage);
       }
 
       const data = await res.json();
