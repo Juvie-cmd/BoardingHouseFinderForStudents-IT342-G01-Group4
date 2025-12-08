@@ -336,19 +336,19 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                           </div>
                         )}
                         <div className="listing-item-stats">
-                          <div>
+                          <div className="stat-item">
                             <p className="stat-label">Price</p>
                             <p className="stat-value-main">₱{listing.price}/mo</p>
                           </div>
-                          <div>
+                          <div className="stat-item">
                             <p className="stat-label">Room Type</p>
                             <p className="stat-value">{listing.roomType}</p>
                           </div>
-                          <div>
+                          <div className="stat-item">
                             <p className="stat-label">Rating</p>
                             <p className="stat-value"><span className="icon"><StarIcon size={14} fill="#FFD700" color="#FFD700" /></span>{listing.rating || 0}</p>
                           </div>
-                          <div>
+                          <div className="stat-item">
                             <p className="stat-label">Views</p>
                             <p className="stat-value">{listing.viewCount || 0}</p>
                           </div>
@@ -466,15 +466,15 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
                             <span className="badge badge-warning"><StarIcon size={14} fill="#FFD700" color="#FFD700" /> {listing.rating || 0}</span>
                           </div>
                           <div className="performance-item-stats">
-                            <div>
+                            <div className="stat-item">
                               <p className="stat-label">Views</p>
                               <p className="stat-value">{views}</p>
                             </div>
-                            <div>
+                            <div className="stat-item">
                               <p className="stat-label">Inquiries</p>
                               <p className="stat-value">{listingInquiries}</p>
                             </div>
-                            <div>
+                            <div className="stat-item">
                               <p className="stat-label">Conversion</p>
                               <p className="stat-value">{conversion}%</p>
                             </div>
