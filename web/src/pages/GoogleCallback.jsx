@@ -1,6 +1,6 @@
 // src/pages/GoogleCallback.jsx
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 // Helper to get the correct dashboard route based on role
@@ -16,8 +16,8 @@ function getDashboardRoute(role) {
 export default function GoogleCallback() {
   const { handleGoogleCallback } = useAuth();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [error, setError] = useState(null);
+  const [processing, setProcessing] = useState(true);
 
   useEffect(() => {
     const processCallback = async () => {
@@ -33,27 +33,35 @@ export default function GoogleCallback() {
           // Wait for the auth context to fully process the callback
           await handleGoogleCallback({ token, email, name, role, id, picture });
           
-          // Small delay to ensure state is propagated
-          await new Promise(resolve => setTimeout(resolve, 150));
-          
-          // Navigate to the correct dashboard based on role from URL params
+          // Use window.location for a full page navigation
+          // This ensures all components properly initialize with the new auth state
           const targetRoute = getDashboardRoute(role);
-          navigate(targetRoute, { replace: true });
+          
+          // Small delay then do a full navigation (not SPA navigation)
+          setTimeout(() => {
+            window.location.href = targetRoute;
+          }, 100);
         } catch (err) {
           console.error("Google callback error:", err);
           setError("Failed to complete login. Please try again.");
-          setTimeout(() => navigate("/login", { replace: true }), 2000);
+          setProcessing(false);
+          setTimeout(() => {
+            window.location.href = "/login";
+          }, 2000);
         }
       } else {
         // If something went wrong, fallback
         console.warn("Missing Google callback params:", { token: !!token, email: !!email, name: !!name, role: !!role });
         setError("Invalid login response. Redirecting...");
-        setTimeout(() => navigate("/login", { replace: true }), 2000);
+        setProcessing(false);
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 2000);
       }
     };
 
     processCallback();
-  }, [searchParams, handleGoogleCallback, navigate]);
+  }, [searchParams, handleGoogleCallback]);
 
   if (error) {
     return <div style={{ padding: '2rem', textAlign: 'center' }}>{error}</div>;
