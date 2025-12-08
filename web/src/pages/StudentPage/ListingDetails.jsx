@@ -100,9 +100,13 @@ export function ListingDetails({ listingId, onBack }) {
       if (isFavorite) {
         await API.delete(`/student/favorite/${listingId}`);
         setIsFavorite(false);
+        // Broadcast favorite removal to other tabs
+        realtimeSync.broadcast(SyncEventTypes.FAVORITE_REMOVED, { listingId });
       } else {
         await API.post('/student/favorite', { listingId });
         setIsFavorite(true);
+        // Broadcast favorite addition to other tabs
+        realtimeSync.broadcast(SyncEventTypes.FAVORITE_ADDED, { listingId });
       }
     } catch (err) {
       console.error("Error toggling favorite:", err);

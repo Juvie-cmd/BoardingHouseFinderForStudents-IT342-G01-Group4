@@ -5,7 +5,7 @@ import { ImageWithFallback } from '../../components/Shared/ImageWithFallback';
 import { Dashboard, StatCard, PerformanceList, DataTable } from '../../components/Dashboard';
 import { HomeIcon, StarIcon, EyeIcon, MessageIcon, ChartIcon, EditIcon, LocationIcon, PlusIcon, BarChartIcon, TrashIcon, CloseIcon } from '../../components/Shared/Icons';
 import { useToast } from '../../components/UI';
-import { useListingSync, useInquirySync } from '../../hooks/useRealtimeSync';
+import { useListingSync, useInquirySync, useRatingSync } from '../../hooks/useRealtimeSync';
 import './styles/LandlordDashboard.css';
 
 export function LandlordDashboard({ onCreateListing, onEditListing }) {
@@ -77,13 +77,15 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
     fetchData();
   }, []);
 
-  // Real-time sync for listings and inquiries across tabs
+  // Real-time sync for listings, inquiries, and ratings across tabs
   const { broadcastDelete: broadcastListingDelete, broadcastUpdate: broadcastListingUpdate, broadcastCreate: broadcastListingCreate } = useListingSync(
     useCallback(() => fetchData(), [])
   );
   const { broadcastReply: broadcastInquiryReply } = useInquirySync(
     useCallback(() => fetchData(), [])
   );
+  // Listen for rating changes to update average rating in real-time
+  useRatingSync(useCallback(() => fetchData(), []));
 
   // Delete listing functions
   const handleDeleteListing = (listing) => setDeleteConfirm(listing);
