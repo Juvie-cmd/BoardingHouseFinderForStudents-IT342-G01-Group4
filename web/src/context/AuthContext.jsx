@@ -8,10 +8,16 @@ const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:8080") + "/a
 const storage = sessionStorage;
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  // Initialize state from sessionStorage to handle page refreshes and immediate checks
+  const [user, setUser] = useState(() => {
+    const storedUser = storage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   const [token, setToken] = useState(storage.getItem("token") || null);
   const [isLoading, setIsLoading] = useState(false);
-  const isAuthenticated = token ?  true : false;
+  
+  // Check both state AND storage for authentication (handles race conditions)
+  const isAuthenticated = !!(token || storage.getItem("token"));
 
   const register = async (name, email, password, role) => {
     setIsLoading(true);
@@ -102,13 +108,16 @@ export function AuthProvider({ children }) {
     var id = params.id;
     var picture = params.picture;
 
-    setToken(authToken);
+    // IMPORTANT: Set storage FIRST before state, so PrivateRoute can read it immediately
     storage.setItem("token", authToken);
-
-    var userData = { email: email, name: name, role: role, id: Number(id), picture: picture };
-    setUser(userData);
+    var userData = { email: email, name: name, role: role, id: Number(id) || null, picture: picture };
     storage.setItem("user", JSON.stringify(userData));
 
+    // Then update React state
+    setToken(authToken);
+    setUser(userData);
+
+    // Optionally fetch full profile (non-blocking for navigation)
     if (authToken) {
       try {
         const res = await fetch(API_BASE + "/profile", {
@@ -127,6 +136,9 @@ export function AuthProvider({ children }) {
         console.warn("Failed to fetch profile after Google login:", err);
       }
     }
+    
+    // Return true to signal completion
+    return true;
   };
 
   const fetchProfile = async () => {
