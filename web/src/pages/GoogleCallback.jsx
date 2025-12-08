@@ -3,6 +3,16 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+// Helper to get the correct dashboard route based on role
+function getDashboardRoute(role) {
+  switch (role?.toLowerCase()) {
+    case 'student': return '/search';
+    case 'landlord': return '/landlord/dashboard';
+    case 'admin': return '/admin/dashboard';
+    default: return '/';
+  }
+}
+
 export default function GoogleCallback() {
   const { handleGoogleCallback } = useAuth();
   const [searchParams] = useSearchParams();
@@ -24,10 +34,11 @@ export default function GoogleCallback() {
           await handleGoogleCallback({ token, email, name, role, id, picture });
           
           // Small delay to ensure state is propagated
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 150));
           
-          // Now navigate to dashboard
-          navigate("/dashboard", { replace: true });
+          // Navigate to the correct dashboard based on role from URL params
+          const targetRoute = getDashboardRoute(role);
+          navigate(targetRoute, { replace: true });
         } catch (err) {
           console.error("Google callback error:", err);
           setError("Failed to complete login. Please try again.");

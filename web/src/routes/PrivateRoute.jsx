@@ -3,9 +3,9 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export function PrivateRoute({ children, allowedRoles }) {
-  const { isAuthenticated, user, loading } = useAuth();
+  const { isAuthenticated, user, isLoading } = useAuth();
 
-  if (loading) return <div>Loading...</div>; // Wait for user info
+  if (isLoading) return <div>Loading...</div>; // Wait for user info
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 

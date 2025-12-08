@@ -44,9 +44,9 @@ function StudentDashboardWrapper() {
 }
 
 export function AppRoutes() {
-  const { isAuthenticated, user, loading } = useAuth();
+  const { isAuthenticated, user, isLoading } = useAuth();
 
-  if (loading) return <div>Loading...</div>;
+  if (isLoading) return <div>Loading...</div>;
 
   // Determine home route based on role
   let homeRoute = "/";
@@ -63,8 +63,9 @@ export function AppRoutes() {
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path="/google-callback" element={<GoogleCallbackPage />} />
 
-      {/* Redirect after login */}
+      {/* Redirect after login - both /home and /dashboard go to role-based route */}
       <Route path="/home" element={<Navigate to={homeRoute} replace />} />
+      <Route path="/dashboard" element={<Navigate to={homeRoute} replace />} />
 
       {/* Student Routes */}
       <Route path="/search" element={
