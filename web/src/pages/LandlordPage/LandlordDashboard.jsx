@@ -1,10 +1,11 @@
 // src/pages/LandlordPage/LandlordDashboard.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import API from '../../api/api';
 import { ImageWithFallback } from '../../components/Shared/ImageWithFallback';
 import { Dashboard, StatCard, PerformanceList, DataTable } from '../../components/Dashboard';
 import { HomeIcon, StarIcon, EyeIcon, MessageIcon, ChartIcon, EditIcon, LocationIcon, PlusIcon, BarChartIcon, TrashIcon, CloseIcon } from '../../components/Shared/Icons';
 import { useToast } from '../../components/UI';
+import { useListingSync, useInquirySync } from '../../hooks/useRealtimeSync';
 import './styles/LandlordDashboard.css';
 
 export function LandlordDashboard({ onCreateListing, onEditListing }) {
@@ -76,15 +77,26 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
     fetchData();
   }, []);
 
+  // Real-time sync for listings and inquiries across tabs
+  const { broadcastDelete: broadcastListingDelete, broadcastUpdate: broadcastListingUpdate, broadcastCreate: broadcastListingCreate } = useListingSync(
+    useCallback(() => fetchData(), [])
+  );
+  const { broadcastReply: broadcastInquiryReply } = useInquirySync(
+    useCallback(() => fetchData(), [])
+  );
+
   // Delete listing functions
   const handleDeleteListing = (listing) => setDeleteConfirm(listing);
 
   const confirmDeleteListing = () => {
-    API.delete(`/landlord/listing/${deleteConfirm.id}`)
+    const listingId = deleteConfirm.id;
+    API.delete(`/landlord/listing/${listingId}`)
       .then(() => {
-        setMyListings(myListings.filter(l => l.id !== deleteConfirm.id));
+        setMyListings(myListings.filter(l => l.id !== listingId));
         setDeleteConfirm(null);
         toast.success('Listing deleted successfully!');
+        // Broadcast listing deletion to other tabs
+        broadcastListingDelete(listingId);
       })
       .catch(err => {
         console.error('Delete listing failed', err);
@@ -108,14 +120,17 @@ export function LandlordDashboard({ onCreateListing, onEditListing }) {
     
     setSendingReply(true);
     try {
-      const response = await API.put(`/landlord/inquiry/${replyingTo.id}/reply`, { reply: replyText });
+      const inquiryId = replyingTo.id;
+      const response = await API.put(`/landlord/inquiry/${inquiryId}/reply`, { reply: replyText });
       // Update inquiry in the list
       setRecentInquiries(prev => prev.map(inq => 
-        inq.id === replyingTo.id ? { ...inq, status: 'REPLIED', reply: replyText, repliedAt: new Date().toISOString() } : inq
+        inq.id === inquiryId ? { ...inq, status: 'REPLIED', reply: replyText, repliedAt: new Date().toISOString() } : inq
       ));
       setReplyingTo(null);
       setReplyText('');
       toast.success('Reply sent successfully!');
+      // Broadcast inquiry reply to other tabs
+      broadcastInquiryReply(inquiryId, replyText);
     } catch (err) {
       console.error('Failed to send reply:', err);
       toast.error('Failed to send reply: ' + (err.response?.data?.message || err.message));

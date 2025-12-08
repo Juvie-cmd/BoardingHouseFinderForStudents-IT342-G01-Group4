@@ -4,6 +4,7 @@ import API from '../../api/api';
 import { ImageWithFallback } from '../../components/Shared/ImageWithFallback';
 import { Map } from '../../components/Shared/Map';
 import { useToast } from '../../components/UI';
+import realtimeSync, { SyncEventTypes } from '../../utils/realtimeSync';
 import { LinkIcon, StarIcon, UsersIcon, CalendarIcon, CheckIcon, LocationIcon, ArrowLeftIcon, CloseIcon, HeartIcon } from '../../components/Shared/Icons';
 import './styles/ListingDetails.css';
 
@@ -120,7 +121,7 @@ export function ListingDetails({ listingId, onBack }) {
     
     setSubmittingRating(true);
     try {
-      await API.post('/student/rating', {
+      const response = await API.post('/student/rating', {
         listingId,
         rating: userRating,
         review: userReview
@@ -134,6 +135,11 @@ export function ListingDetails({ listingId, onBack }) {
           reviews: (listing.reviews || 0) + 1
         });
         setHasExistingRating(true);
+        // Broadcast new rating to other tabs
+        realtimeSync.broadcast(SyncEventTypes.RATING_ADDED, { listingId, rating: userRating });
+      } else {
+        // Broadcast rating update to other tabs
+        realtimeSync.broadcast(SyncEventTypes.RATING_UPDATED, { listingId, rating: userRating });
       }
       
       toast.success('Rating submitted successfully!');
@@ -163,8 +169,10 @@ export function ListingDetails({ listingId, onBack }) {
       type: 'MESSAGE',
       message: messageText
     })
-      .then(() => {
+      .then((res) => {
         toast.success('Message sent successfully!');
+        // Broadcast inquiry creation to other tabs
+        realtimeSync.broadcast(SyncEventTypes.INQUIRY_CREATED, res.data || { listingId: listing.id, type: 'MESSAGE' });
         setMessageText('');
         setShowMessageModal(false);
       })
@@ -191,8 +199,10 @@ export function ListingDetails({ listingId, onBack }) {
       visitTime,
       notes: visitNotes
     })
-      .then(() => {
+      .then((res) => {
         toast.success('Visit request sent successfully!');
+        // Broadcast inquiry creation to other tabs
+        realtimeSync.broadcast(SyncEventTypes.INQUIRY_CREATED, res.data || { listingId: listing.id, type: 'VISIT_REQUEST' });
         setVisitDate('');
         setVisitTime('');
         setVisitNotes('');

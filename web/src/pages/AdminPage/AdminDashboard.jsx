@@ -1,9 +1,10 @@
 // src/pages/AdminPage/AdminDashboard.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import API from '../../api/api';
 import { Dashboard, StatCard, PerformanceList, DataTable } from '../../components/Dashboard';
 import { UsersIcon, HomeIcon, CheckIcon, LocationIcon, StarIcon, CloseIcon, SearchIcon, GraduationIcon, BuildingIcon, EditIcon, TrashIcon } from '../../components/Shared/Icons';
 import { useToast } from '../../components/UI';
+import { useListingSync, useUserSync } from '../../hooks/useRealtimeSync';
 import './styles/AdminDashboard.css';
 
 const ImageWithFallback = ({ src, alt, className }) => {
@@ -67,6 +68,14 @@ export function AdminDashboard() {
     fetchData();
   }, []);
 
+  // Real-time sync for listings and users across tabs
+  const { broadcastStatusChange: broadcastListingStatus, broadcastDelete: broadcastListingDelete } = useListingSync(
+    useCallback(() => fetchData(), [])
+  );
+  const { broadcastUpdate: broadcastUserUpdate, broadcastDelete: broadcastUserDelete } = useUserSync(
+    useCallback(() => fetchData(), [])
+  );
+
   const stats = {
     totalUsers: users.length,
     totalStudents: users.filter(u => u.role && u.role.toLowerCase() === 'student').length,
@@ -95,6 +104,8 @@ export function AdminDashboard() {
         setEditingUser(null);
         setEditForm({ name: '', email: '', role: '', active: true });
         toast.success('User updated successfully!');
+        // Broadcast user update to other tabs
+        broadcastUserUpdate(res.data);
       })
       .catch(err => {
         console.error('Failed to save user', err);
@@ -107,9 +118,12 @@ export function AdminDashboard() {
   const confirmDeleteUser = () => {
     API.delete(`/admin/user/${deleteConfirm.id}`)
       .then(() => {
+        const deletedUserId = deleteConfirm.id;
         setUsers(users. filter(u => u.id !== deleteConfirm.id));
         setDeleteConfirm(null);
         toast.success('User deleted successfully!');
+        // Broadcast user deletion to other tabs
+        broadcastUserDelete(deletedUserId);
       })
       . catch(err => {
         console.error('Delete failed', err);
@@ -125,6 +139,8 @@ export function AdminDashboard() {
       .then(() => {
         setListings(listings.map(l => l.id === id ? { ...l, status: 'APPROVED', available: true, rejectionNotes: null } : l));
         toast.success('Listing approved successfully!');
+        // Broadcast listing status change to other tabs
+        broadcastListingStatus(id, 'APPROVED');
       })
       .catch(err => {
         console.error('Approve failed', err);
@@ -138,12 +154,15 @@ export function AdminDashboard() {
   };
 
   const confirmRejectListing = () => {
-    API.put(`/admin/listing/${rejectingListing.id}/reject`, { rejectionNotes })
+    const listingId = rejectingListing.id;
+    API.put(`/admin/listing/${listingId}/reject`, { rejectionNotes })
       .then(() => {
-        setListings(listings.map(l => l.id === rejectingListing.id ? { ...l, status: 'REJECTED', available: false, rejectionNotes } : l));
+        setListings(listings.map(l => l.id === listingId ? { ...l, status: 'REJECTED', available: false, rejectionNotes } : l));
         setRejectingListing(null);
         setRejectionNotes('');
         toast.success('Listing rejected. Landlord will be notified.');
+        // Broadcast listing status change to other tabs
+        broadcastListingStatus(listingId, 'REJECTED');
       })
       .catch(err => {
         console.error('Reject failed', err);
@@ -159,11 +178,14 @@ export function AdminDashboard() {
   const handleDeleteListing = (listing) => setDeleteListingConfirm(listing);
   
   const confirmDeleteListing = () => {
-    API.delete(`/admin/listing/${deleteListingConfirm.id}`)
+    const listingId = deleteListingConfirm.id;
+    API.delete(`/admin/listing/${listingId}`)
       .then(() => {
-        setListings(listings.filter(l => l.id !== deleteListingConfirm.id));
+        setListings(listings.filter(l => l.id !== listingId));
         setDeleteListingConfirm(null);
         toast.success('Listing deleted successfully!');
+        // Broadcast listing deletion to other tabs
+        broadcastListingDelete(listingId);
       })
       .catch(err => {
         console.error('Delete listing failed', err);

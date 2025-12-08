@@ -5,6 +5,7 @@ import { uploadMultipleImages, supabase } from '../../utils/supabaseClient';
 import { ArrowLeftIcon, CloudIcon, CloseIcon } from '../../components/Shared/Icons';
 import { LocationPicker } from '../../components/Shared/LocationPicker';
 import { useToast } from '../../components/UI';
+import realtimeSync, { SyncEventTypes } from '../../utils/realtimeSync';
 import './styles/ListingForm.css';
 
 // Maximum number of images allowed per listing
@@ -204,8 +205,10 @@ export function ListingForm({ listingId, onBack }) {
     // ⭐ UPDATED — no more landlordId in URL, backend reads JWT
     if (isEditing) {
       API.put(`/landlord/listing/${listingId}`, payload)
-        .then(() => {
+        .then((res) => {
           toast.success('Listing updated successfully!');
+          // Broadcast listing update to other tabs
+          realtimeSync.broadcast(SyncEventTypes.LISTING_UPDATED, res.data || { id: listingId });
           onBack();
         })
         .catch(err => {
@@ -214,8 +217,10 @@ export function ListingForm({ listingId, onBack }) {
         });
     } else {
       API.post(`/landlord/listing`, payload)
-        .then(() => {
+        .then((res) => {
           toast.success('Listing created successfully!');
+          // Broadcast new listing to other tabs
+          realtimeSync.broadcast(SyncEventTypes.LISTING_CREATED, res.data || payload);
           onBack();
         })
         .catch(err => {

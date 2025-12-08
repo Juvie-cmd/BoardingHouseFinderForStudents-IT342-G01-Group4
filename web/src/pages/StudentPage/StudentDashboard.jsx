@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import API from "../../api/api";
 import { ImageWithFallback } from "../../components/Shared/ImageWithFallback";
 import { LocationSearchInput } from "../../components/Shared/LocationSearchInput";
 import { ListingsMap } from "../../components/Shared/ListingsMap";
 import { useToast } from "../../components/UI";
+import { useListingSync, useInquirySync, useFavoriteSync } from "../../hooks/useRealtimeSync";
 import {
   LocationIcon,
   HomeIcon,
@@ -124,6 +125,56 @@ export function StudentDashboard({ onViewDetails }) {
     }
   }, [activeTab]);
 
+  // ⭐ REAL-TIME SYNC - Refresh data when changes happen in other tabs
+  const refreshListings = useCallback(() => {
+    API.get("/student/listings")
+      .then((res) => {
+        const normalized = (res.data || []).map((l) => {
+          if (typeof l.amenities === "string") {
+            l.amenities = l.amenities
+              ? l.amenities.split(",").map((a) => a.trim())
+              : [];
+          }
+          return {
+            ...l,
+            image: l.image || "/placeholder.jpg",
+            roomType: l.roomType || "N/A",
+            distance: l.distance || "",
+            location: l.location || "",
+            title: l.title || "Untitled",
+            rating: l.rating || 0,
+            reviews: l.reviews || 0
+          };
+        });
+        setListings(normalized);
+        setFilteredListings(normalized);
+      })
+      .catch((err) => console.error("Error refreshing listings:", err));
+  }, []);
+
+  const refreshFavorites = useCallback(() => {
+    API.get("/student/favorites")
+      .then((res) => {
+        const data = res.data || [];
+        setFavoritesData(data);
+        setFavorites(new Set(data.map(f => f.listingId)));
+      })
+      .catch((err) => console.error("Error refreshing favorites:", err));
+  }, []);
+
+  const refreshInquiries = useCallback(() => {
+    if (activeTab === "inquiries") {
+      API.get("/student/inquiries")
+        .then((res) => setInquiries(res.data || []))
+        .catch((err) => console.error("Error refreshing inquiries:", err));
+    }
+  }, [activeTab]);
+
+  // Set up real-time sync listeners
+  const { broadcastAdd: broadcastFavoriteAdd, broadcastRemove: broadcastFavoriteRemove } = useFavoriteSync(refreshFavorites);
+  useListingSync(refreshListings);
+  const { broadcastCreate: broadcastInquiryCreate } = useInquirySync(refreshInquiries);
+
   // ⭐ TOGGLE FAVORITE
   const toggleFavorite = async (e, listingId) => {
     e.stopPropagation(); // Prevent card click
@@ -138,9 +189,13 @@ export function StudentDashboard({ onViewDetails }) {
         });
         // Also update favoritesData if on favorites tab
         setFavoritesData(prev => prev.filter(f => f.listingId !== listingId));
+        // Broadcast favorite removal to other tabs
+        broadcastFavoriteRemove(listingId);
       } else {
         await API.post('/student/favorite', { listingId });
         setFavorites(prev => new Set([...prev, listingId]));
+        // Broadcast favorite addition to other tabs
+        broadcastFavoriteAdd(listingId);
       }
     } catch (err) {
       console.error("Error toggling favorite:", err);
