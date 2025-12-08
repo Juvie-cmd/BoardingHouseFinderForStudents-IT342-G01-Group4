@@ -199,10 +199,10 @@ Update your Google Cloud Console OAuth credentials:
 
 ## 👥 Team Members
 
-- **Justin Andry Diva** — Developer — justinandry.diva@cit.edu — [@avid0101](https://github.com/avid0101)  
-- **Juvie Coca** — Developer — juvie.coca@cit.edu — [@Juvie-cmd](https://github.com/Juvie-cmd)  
-- **Ken Daniel E. Cortes** — Developer — kendaniel.cortes@cit.edu — [@knkncrts1](https://github.com/knkncrts1)  
-- **E.J Boy Gabriel S. Flores** — Developer — ejboygabriel.flores@cit.edu — [@floresejboy](https://github.com/floresejboy)
+- **Justin Andry Diva** — _Backend Developer_ — justinandry.diva@cit.edu — [@avid0101](https://github.com/avid0101)  
+- **Juvie Coca** — _Frontend Developer_ — juvie.coca@cit.edu — [@Juvie-cmd](https://github.com/Juvie-cmd)  
+- **Ken Daniel E. Cortes** — _Frontend Developer_ — kendaniel.cortes@cit.edu — [@knkncrts1](https://github.com/knkncrts1)  
+- **E.J Boy Gabriel S. Flores** — _Mobile Developer_ — ejboygabriel.flores@cit.edu — [@floresejboy](https://github.com/floresejboy)
 
 ---
 
