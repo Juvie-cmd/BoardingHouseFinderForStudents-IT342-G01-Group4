@@ -23,6 +23,9 @@ RUN ./mvnw package -DskipTests -B
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
+# Install wget for healthcheck
+RUN apk add --no-cache wget
+
 # Copy the built artifact from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
