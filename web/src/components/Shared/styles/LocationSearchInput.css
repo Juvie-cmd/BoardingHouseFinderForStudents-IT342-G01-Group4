@@ -29,6 +29,7 @@
   font-size: 14px;
   transition: border-color 0.2s, box-shadow 0.2s;
   background-color: #fff;
+  color: black;
 }
 
 .location-search-field:focus {

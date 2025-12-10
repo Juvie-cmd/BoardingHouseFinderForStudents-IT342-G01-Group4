@@ -792,13 +792,13 @@ export function StudentDashboard({ onViewDetails }) {
       )}
 
       {/* FOOTER */}
-      <footer className="footer">
+      {/* <footer className="footer">
         <div className="container">
           <div className="footer-bottom">
             <p>© 2025 BoardingHouseFinder. All rights reserved.</p>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 }
