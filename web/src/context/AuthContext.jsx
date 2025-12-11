@@ -60,7 +60,14 @@ export function AuthProvider({ children }) {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
+        let errorData;
+        try {
+          errorData = await res.json();
+        } catch (e) {
+          // If response is not JSON (e.g., 401 default page), use status text
+          throw new Error("Login failed: " + res.statusText);
+        }
+        
         const serverMessage = errorData.message || "Invalid email or password";
         const displayMessage = serverMessage === "Bad credentials" ? "Invalid Credentials" : serverMessage;
         throw new Error(displayMessage);
