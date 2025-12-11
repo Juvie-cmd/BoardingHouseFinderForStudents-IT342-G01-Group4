@@ -46,8 +46,6 @@ function StudentDashboardWrapper() {
 export function AppRoutes() {
   const { isAuthenticated, user, isLoading } = useAuth();
 
-  if (isLoading) return <div>Loading...</div>;
-
   // Determine home route based on role
   let homeRoute = "/";
   if (isAuthenticated && user) {

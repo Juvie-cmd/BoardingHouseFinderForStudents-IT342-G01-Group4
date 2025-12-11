@@ -176,16 +176,7 @@ useEffect(() => {
               </div>
               <form onSubmit={handleLogin} className="form-layout">
                 {loginSuccess && <Alert variant="success">{loginSuccess}</Alert>}
-                {loginError && (
-                  <Alert 
-                    variant="error" 
-                    style={{ width: '100%' }}
-                  >
-                    <div style={{ textAlign: 'center', width: '100%' }}>
-                      {loginError}
-                    </div>
-                  </Alert>
-                )}
+                {loginError && <Alert variant="error">{loginError}</Alert>}
 
                 <button
                 type="button"

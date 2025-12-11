@@ -5,9 +5,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export function PublicRoute({ children }) {
-  const { isAuthenticated, user, loading } = useAuth();
-
-  if (loading) return <div>Loading...</div>; // Wait for user info
+  const { isAuthenticated, user } = useAuth();
 
   let homeRoute = "/";
   if (isAuthenticated && user) {  // Only when user is loaded
